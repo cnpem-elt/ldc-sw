@@ -43,10 +43,18 @@ class SCPI:
         self.instrument.write(':OUTPut1:STATe %d' % 0)
         print("Output disabled successfully!")
 
-    def measure(self):
+    def measure_all(self):
         voltage_value = self.instrument.query_ascii_values(':MEASure:VOLTage:DC? (%s)' % '@1')
         current_value = self.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
         print("Output Voltage: %.3fV\nOutput Current: %.3fA" % (voltage_value[0], current_value[0]))
+
+    def measure_current(self):
+        current_value = self.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
+        print("Output Current: %.3fA" % current_value[0])
+
+    def measure_voltage(self):
+        voltage_value = self.instrument.query_ascii_values(':MEASure:VOLTage:DC? (%s)' % '@1')
+        print("Output Voltage: %.3fV" % voltage_value[0])
 
 
 # SCPI Communication module start
@@ -133,7 +141,7 @@ class LDC:
         print("Graphic file named '{}' saved successfully!")
 
 
-# LDC Functions Module start
+# LDC Functions module start
 ldc = LDC()
 
 
