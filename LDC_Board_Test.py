@@ -2,12 +2,12 @@
 # LDC Board Test
 
 
-import csv
 import matplotlib.pyplot as plt
 import numpy as np
 import pydrs
 import pyvisa as visa
 import time
+from datetime import datetime
 
 # PyDRS Communication with IIB
 drs = pydrs.SerialDRS()
@@ -54,54 +54,87 @@ instrument = input("Insert instrument id: ")
 scpi = SCPI(instrument)
 
 
-def read_ground_leakage(duration, save_img, save_csv):
-    frequency = 10
-    period = 1 / frequency
-    samples = []
-    time_samples = []
-    error = []
-    for x in range(int(frequency * duration)):
-        current_value = scpi.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
-        samples.append(drs.read_bsmp_variable(53, 'float'))
-        time_samples.append(str(round(x * period, 2)))
-        error.append(current_value[0] - samples[x])
-        time.sleep(period)
-    np_samples = np.array(samples)
-    np_error = np.array(error)
-    print("Mean: {0:.3f} mA".format(np_samples.mean() * 1000))
-    print("Maximum: {0:.3f} mA".format(np_samples.max() * 1000))
-    print("Minimum: {0:.3f} mA".format(np_samples.min() * 1000))
-    print("Peak to peak: {0:.3f} mA".format((np_samples.max() - np_samples.min()) * 1000))
-    print("Mean Error: {0:.3f} mA".format(abs((np_error.mean()) * 1000)))
-    print("Standard Deviation: {0:.3f} mA\n".format(np_samples.std() * 1000))
-    plt.plot(time_samples, samples)
-    plt.xlabel('Time [s]')
-    plt.ylabel('Leakage Current [A]')
-    plt.title('Leakage Current')
-    if save_img == 1:
-        plt.savefig('leakage.png')
-        print("Graphic saved successfully!")
-        print("Ground Leakage Measure Finished!")
-    elif save_img == 0:
-        plt.show()
-        print("Ground Leakage measure finished!")
-    else:
-        print("Invalid input!\nInsert 1 for saving the graphics or insert 0 for printing it.")
-    if save_csv == 1:
+# LDC Functions
+class LDC:
+    def __init__(self):
+        self.frequency = 10
+        self.period = 1 / self.frequency
+        self.mean = 0
+        self.maximum = 0
+        self.minimum = 0
+        self.ppc = 0
+        self.mean_error = 0
+        self.std_dev = 0
+        self.test_time = 0
+        self.samples = []
+        self.time_samples = []
+        self.error = []
+        print("LDC functions enabled!")
+
+    def read_ground_leakage(self, duration):
+        self.samples = []
+        self.time_samples = []
+        self.error = []
+        for x in range(int(self.frequency * duration)):
+            current_value = scpi.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
+            self.samples.append(drs.read_bsmp_variable(53, 'float'))
+            self.time_samples.append(round(x * self.period, 2))
+            self.error.append(current_value[0] - self.samples[x])
+            time.sleep(self.period)
+            np_samples = np.array(self.samples)
+            np_error = np.array(self.error)
+        self.test_time = datetime.today()
+        self.mean = np_samples.mean() * 1000
+        self.maximum = np_samples.max() * 1000
+        self.minimum = np_samples.min() * 1000
+        self.ppc = (np_samples.max() - np_samples.min()) * 1000
+        self.mean_error = abs((np_error.mean()) * 1000)
+        self.std_dev = np_samples.std() * 1000
+        print("Mean: {0:.3f} mA".format(self.mean))
+        print("Maximum: {0:.3f} mA".format(self.maximum))
+        print("Minimum: {0:.3f} mA".format(self.minimum))
+        print("Peak to peak: {0:.3f} mA".format(self.ppc))
+        print("Mean Error: {0:.3f} mA".format(self.mean_error))
+        print("Standard Deviation: {0:.3f} mA\n".format(self.std_dev))
+
+    def save_csv_file(self):
+        test_name = self.test_time.strftime('%d_%m_%Y-%H_%M_%S')
+        name = test_name + '.csv'
         data = [['Leakage Current'], ['Time']]
         column0 = data[0]
         column1 = data[1]
-        for row in range(len(samples)):
-            column0.append(samples[row])
-            column1.append(time_samples[row])
-        with open('samples.csv', 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerows(data)
-        print("Samples saved to csv file.")
-    elif save_csv == 0:
-        print("Samples will not be saved to a csv file.")
-    else:
-        print("Invalid input!\nInsert 1 for saving the samples or insert 0 to skip.")
+        for row in range(len(self.samples)):
+            column0.append(self.samples[row])
+            column1.append(self.time_samples[row])
+        np.savetxt(name, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
+        print("CSV file named '{}' saved successfully!".format(name))
+
+    def plot_graphic(self):
+        fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+        ax.locator_params(axis='y', tight=True, nbins=15)
+        ax.locator_params(axis='x', tight=True, nbins=30)
+        ax.plot(self.time_samples, self.samples)
+        plt.xlabel('Time [s]')
+        plt.ylabel('Leakage Current [A]')
+        plt.title('Leakage Current')
+        plt.show()
+
+    def save_graphic(self):
+        test_name = self.test_time.strftime('%d_%m_%Y-%H_%M_%S')
+        name = test_name + '.jpg'
+        fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+        ax.locator_params(axis='y', tight=True, nbins=15)
+        ax.locator_params(axis='x', tight=True, nbins=30)
+        ax.plot(self.time_samples, self.samples)
+        plt.xlabel('Time [s]')
+        plt.ylabel('Leakage Current [A]')
+        plt.title('Leakage Current')
+        plt.savefig(name)
+        print("Graphic file named '{}' saved successfully!")
+
+
+# LDC Functions Module start
+ldc = LDC()
 
 
 # Accuracy Test Properties and Functions
@@ -125,8 +158,8 @@ class AccuracyTest:
             scpi.set_current(current)
             print("Waiting for acquisition...\n")
             print("Values for {0:.3f} mA".format(i * step * 1000))
-            print('--'*20)
-            read_ground_leakage(10, 0, 0)
+            print('--' * 20)
+            ldc.read_ground_leakage(10)
             print('--' * 20)
             if (i * step) < span:
                 print("Acquisition completed! Moving for next step...\n")
