@@ -4,6 +4,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pydrs
 import pyvisa as visa
 import time
@@ -12,6 +13,9 @@ from datetime import datetime
 # PyDRS Communication with IIB
 drs = pydrs.SerialDRS()
 drs.connect('COM2')
+
+# Gets the current directory to save the test data
+cwd = os.getcwd()
 
 
 # SCPI Commands
@@ -152,10 +156,15 @@ class AccuracyTest:
         self.total_error = []
         self.total_std = []
         self.total_current = []
-        self.test_time = []
+        self.total_ppc = []
         print("Accuracy Test module activated!")
 
     def start(self, step, minimum, maximum):
+        test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
+        test_name = "AccuracyTest"+test_date
+        os.makedirs(os.path.join(cwd, test_name))
+        os.makedirs(os.path.join(cwd, test_name+"\\Samples"))
+        os.makedirs(os.path.join(cwd, test_name+"\\Plots"))
         span = maximum - minimum
         total_steps = round(span / step) + 1
         print("Starting test...")
@@ -169,6 +178,17 @@ class AccuracyTest:
             print('--' * 20)
             ldc.read_ground_leakage(10)
             print('--' * 20)
+            # Save the files in the requested directories
+            os.chdir(os.path.join(cwd, test_name+"\\Plots"))
+            ldc.save_graphic()
+            os.chdir(os.path.join(cwd, test_name+"\\Samples"))
+            ldc.save_csv_file()
+            os.chdir(cwd)
+            self.total_mean.append(ldc.mean)
+            self.total_error.append(ldc.mean_error)
+            self.total_std.append(ldc.std_dev)
+            self.total_current.append(current)
+            self.total_ppc.append(ldc.ppc)
             if (i * step) < span:
                 print("Acquisition completed! Moving for next step...\n")
             elif (i * step) == span:
