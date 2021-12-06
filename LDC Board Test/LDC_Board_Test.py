@@ -98,7 +98,7 @@ class LDC:
         plt.ylabel('Leakage Current [A]')
         plt.title('Leakage Current')
         plt.savefig(name)
-        print("Graphic file named '{}' saved successfully!")
+        print("Graphic file named '{}' saved successfully!".format(name))
 
 
 # LDC Functions module start
@@ -130,7 +130,7 @@ class AccuracyTest:
             current = minimum + (i * step)
             scpi.set_current(current)
             print("Waiting for acquisition...\n")
-            print("Values for {0:.3f} mA".format(i * step * 1000))
+            print("Values for {0:.3f} mA".format(current * 1000))
             print('--' * 20)
             ldc.read_ground_leakage(10)
             print('--' * 20)
