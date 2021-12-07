@@ -16,7 +16,6 @@ drs.connect('COM2')
 # Gets the current directory to save the test data
 cwd = os.getcwd()
 
-
 # SCPI Communication module start
 instrument = input("Insert instrument id: ")
 scpi = SCPI(instrument)
@@ -44,7 +43,7 @@ class LDC:
         self.time_samples = []
         self.error = []
         for x in range(int(self.frequency * duration)):
-            current_value = scpi.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
+            current_value = scpi.measure_current()
             self.samples.append(drs.read_bsmp_variable(53, 'float'))
             self.time_samples.append(round(x * self.period, 2))
             self.error.append(current_value[0] - self.samples[x])
@@ -129,6 +128,7 @@ class AccuracyTest:
             print("Setting current value...")
             current = minimum + (i * step)
             scpi.set_current(current)
+            time.sleep(0.15)
             print("Waiting for acquisition...\n")
             print("Values for {0:.3f} mA".format(current * 1000))
             print('--' * 20)
