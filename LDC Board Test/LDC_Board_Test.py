@@ -112,16 +112,20 @@ class AccuracyTest:
         self.total_std = []
         self.total_current = []
         self.total_ppc = []
+        self.test_date = 0
+        self.test_name = 0
         print("Accuracy Test module activated!")
 
     def start(self, step, minimum, maximum):
-        test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
-        test_name = "AccuracyTest"+test_date
-        os.makedirs(os.path.join(cwd, test_name))
-        os.makedirs(os.path.join(cwd, test_name+"\\Samples"))
-        os.makedirs(os.path.join(cwd, test_name+"\\Plots"))
+        # Prepare the directories and starting values
+        self.test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
+        self.test_name = "AccuracyTest"+self.test_date
+        os.makedirs(os.path.join(cwd, self.test_name))
+        os.makedirs(os.path.join(cwd, self.test_name+"\\Samples"))
+        os.makedirs(os.path.join(cwd, self.test_name+"\\Plots"))
         span = maximum - minimum
         total_steps = round(span / step) + 1
+        # Do the tests for every specified step
         print("Starting test...")
         scpi.enable_output()
         for i in range(int(total_steps)):
@@ -135,9 +139,9 @@ class AccuracyTest:
             ldc.read_ground_leakage(10)
             print('--' * 20)
             # Save the files in the requested directories
-            os.chdir(os.path.join(cwd, test_name+"\\Plots"))
+            os.chdir(os.path.join(cwd, self.test_name+"\\Plots"))
             ldc.save_graphic()
-            os.chdir(os.path.join(cwd, test_name+"\\Samples"))
+            os.chdir(os.path.join(cwd, self.test_name+"\\Samples"))
             ldc.save_csv_file()
             os.chdir(cwd)
             self.total_mean.append(ldc.mean)
@@ -150,3 +154,45 @@ class AccuracyTest:
             elif (i * step) == span:
                 print("Accuracy Test completed!")
         scpi.disable_output()
+
+        # Saves the Plot of Source Current X Leakage Current Mean
+        fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+        ax.locator_params(axis='y', tight=True, nbins=15)
+        ax.locator_params(axis='x', tight=True, nbins=30)
+        ax.plot(self.total_current, self.total_mean)
+        plt.xlabel('Source Current [A]')
+        plt.ylabel('Leakage Current Mean [A]')
+        plt.title('Source Current X Leakage Current Mean')
+        os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
+        name = 'SourceCurrent_X_LeakageCurrentMean.jpg'
+        plt.savefig('SourceCurrent_X_LeakageCurrentMean.jpg')
+        os.chdir(cwd)
+        print("Graphic file named '{}' saved successfully!".format(name))
+
+        # Saves the Plot of Source Current X Current Error Mean
+        fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+        ax.locator_params(axis='y', tight=True, nbins=15)
+        ax.locator_params(axis='x', tight=True, nbins=30)
+        ax.plot(self.total_current, self.total_error)
+        plt.xlabel('Source Current [A]')
+        plt.ylabel('Leakage Current Error Mean [A]')
+        plt.title('Source Current X Leakage Current Mean')
+        os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
+        name = 'SourceCurrent_X_CurrentErrorMean.jpg'
+        plt.savefig('SourceCurrent_X_CurrentErrorMean.jpg')
+        os.chdir(cwd)
+        print("Graphic file named '{}' saved successfully!".format(name))
+
+        # Saves the Plot of Source Current X Current Standard Deviation
+        fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+        ax.locator_params(axis='y', tight=True, nbins=15)
+        ax.locator_params(axis='x', tight=True, nbins=30)
+        ax.plot(self.total_current, self.total_std)
+        plt.xlabel('Source Current [A]')
+        plt.ylabel('Leakage Current Standard Deviation [A]')
+        plt.title('Source Current X Current Standard Deviation')
+        os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
+        name = 'SourceCurrent_X_CurrentStandardDeviation.jpg'
+        plt.savefig('SourceCurrent_X_CurrentStandardDeviation.jpg')
+        os.chdir(cwd)
+        print("Graphic file named '{}' saved successfully!".format(name))
