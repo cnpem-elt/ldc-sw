@@ -43,20 +43,20 @@ class LDC:
         self.time_samples = []
         self.error = []
         for x in range(int(self.frequency * duration)):
-            current_value = scpi.measure_current()
-            self.samples.append(drs.read_bsmp_variable(53, 'float'))
+            current_value = scpi.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
+            self.samples.append((drs.read_bsmp_variable(53, 'float'))*1000)
             self.time_samples.append(round(x * self.period, 2))
             self.error.append(current_value[0] - self.samples[x])
             time.sleep(self.period)
             np_samples = np.array(self.samples)
             np_error = np.array(self.error)
         self.test_time = datetime.today()
-        self.mean = np_samples.mean() * 1000
-        self.maximum = np_samples.max() * 1000
-        self.minimum = np_samples.min() * 1000
-        self.ppc = (np_samples.max() - np_samples.min()) * 1000
-        self.mean_error = abs((np_error.mean()) * 1000)
-        self.std_dev = np_samples.std() * 1000
+        self.mean = np_samples.mean()
+        self.maximum = np_samples.max()
+        self.minimum = np_samples.min()
+        self.ppc = (np_samples.max() - np_samples.min())
+        self.mean_error = abs(np_error.mean())
+        self.std_dev = np_samples.std()
         print("Mean: {0:.3f} mA".format(self.mean))
         print("Maximum: {0:.3f} mA".format(self.maximum))
         print("Minimum: {0:.3f} mA".format(self.minimum))
@@ -82,7 +82,7 @@ class LDC:
         ax.locator_params(axis='x', tight=True, nbins=30)
         ax.plot(self.time_samples, self.samples)
         plt.xlabel('Time [s]')
-        plt.ylabel('Leakage Current [A]')
+        plt.ylabel('Leakage Current [mA]')
         plt.title('Leakage Current')
         plt.show()
 
@@ -94,7 +94,7 @@ class LDC:
         ax.locator_params(axis='x', tight=True, nbins=30)
         ax.plot(self.time_samples, self.samples)
         plt.xlabel('Time [s]')
-        plt.ylabel('Leakage Current [A]')
+        plt.ylabel('Leakage Current [mA]')
         plt.title('Leakage Current')
         plt.savefig(name)
         print("Graphic file named '{}' saved successfully!".format(name))
@@ -114,6 +114,7 @@ class AccuracyTest:
         self.total_ppc = []
         self.test_date = 0
         self.test_name = 0
+        self.total_steps = 0
         print("Accuracy Test module activated!")
 
     def start(self, step, minimum, maximum):
@@ -124,11 +125,11 @@ class AccuracyTest:
         os.makedirs(os.path.join(cwd, self.test_name+"\\Samples"))
         os.makedirs(os.path.join(cwd, self.test_name+"\\Plots"))
         span = maximum - minimum
-        total_steps = round(span / step) + 1
+        self.total_steps = round(span / step) + 1
         # Do the tests for every specified step
         print("Starting test...")
         scpi.enable_output()
-        for i in range(int(total_steps)):
+        for i in range(int(self.total_steps)):
             print("Setting current value...")
             current = minimum + (i * step)
             scpi.set_current(current)
@@ -147,7 +148,7 @@ class AccuracyTest:
             self.total_mean.append(ldc.mean)
             self.total_error.append(ldc.mean_error)
             self.total_std.append(ldc.std_dev)
-            self.total_current.append(current)
+            self.total_current.append(current * 1000)
             self.total_ppc.append(ldc.ppc)
             if (i * step) < span:
                 print("Acquisition completed! Moving for next step...\n")
@@ -158,10 +159,10 @@ class AccuracyTest:
         # Saves the Plot of Source Current X Leakage Current Mean
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
-        ax.locator_params(axis='x', tight=True, nbins=30)
-        ax.plot(self.total_current, self.total_mean)
-        plt.xlabel('Source Current [A]')
-        plt.ylabel('Leakage Current Mean [A]')
+        ax.locator_params(axis='x', tight=True, nbins=20)
+        ax.plot(self.total_current, self.total_mean, label='Source Current')
+        plt.xlabel('Source Current [mA]')
+        plt.ylabel('Leakage Current Mean [mA]')
         plt.title('Source Current X Leakage Current Mean')
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
         name = 'SourceCurrent_X_LeakageCurrentMean.jpg'
@@ -172,10 +173,10 @@ class AccuracyTest:
         # Saves the Plot of Source Current X Current Error Mean
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
-        ax.locator_params(axis='x', tight=True, nbins=30)
+        ax.locator_params(axis='x', tight=True, nbins=20)
         ax.plot(self.total_current, self.total_error)
-        plt.xlabel('Source Current [A]')
-        plt.ylabel('Leakage Current Error Mean [A]')
+        plt.xlabel('Source Current [mA]')
+        plt.ylabel('Leakage Current Error Mean [mA]')
         plt.title('Source Current X Leakage Current Mean')
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
         name = 'SourceCurrent_X_CurrentErrorMean.jpg'
@@ -186,13 +187,25 @@ class AccuracyTest:
         # Saves the Plot of Source Current X Current Standard Deviation
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
-        ax.locator_params(axis='x', tight=True, nbins=30)
+        ax.locator_params(axis='x', tight=True, nbins=20)
         ax.plot(self.total_current, self.total_std)
-        plt.xlabel('Source Current [A]')
-        plt.ylabel('Leakage Current Standard Deviation [A]')
+        plt.xlabel('Source Current [mA]')
+        plt.ylabel('Leakage Current Standard Deviation [mA]')
         plt.title('Source Current X Current Standard Deviation')
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
         name = 'SourceCurrent_X_CurrentStandardDeviation.jpg'
         plt.savefig('SourceCurrent_X_CurrentStandardDeviation.jpg')
         os.chdir(cwd)
         print("Graphic file named '{}' saved successfully!".format(name))
+
+        name = 'SourceCurrent_X_LeakageCurrentMean.csv'
+        data = [['Source Current'], ['Leakage Current Mean']]
+        column0 = data[0]
+        column1 = data[1]
+        for row in range(len(self.total_mean)):
+            column0.append(self.total_current[row])
+            column1.append(self.total_mean[row])
+        os.chdir(os.path.join(cwd, self.test_name + "\\Samples"))
+        np.savetxt(name, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
+        os.chdir(cwd)
+        print("CSV file named '{}' saved successfully!".format(name))
