@@ -6,7 +6,7 @@ import numpy as np
 import os
 import time
 from datetime import datetime
-from LDC_Comands import LDC
+from LDC_Commands import LDC
 
 # Gets the current directory to save the test data
 cwd = os.getcwd()
