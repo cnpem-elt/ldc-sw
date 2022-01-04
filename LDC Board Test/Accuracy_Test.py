@@ -11,7 +11,7 @@ from LDC_Commands import LDC
 # Gets the current directory to save the test data
 cwd = os.getcwd()
 
-# LDC Functions module start
+# LDC Functions start
 ldc = LDC()
 
 
@@ -76,10 +76,10 @@ class AccuracyTest:
         plt.ylabel('Leakage Current Mean [mA]')
         plt.title('Source Current X Leakage Current Mean')
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
-        name = 'SourceCurrent_X_LeakageCurrentMean.jpg'
-        plt.savefig('SourceCurrent_X_LeakageCurrentMean.jpg')
+        jpgname = 'SourceCurrent_X_LeakageCurrentMean.jpg'
+        plt.savefig(jpgname)
         os.chdir(cwd)
-        print("Graphic file named '{}' saved successfully!".format(name))
+        print("Graphic file named '{}' saved successfully!".format(jpgname))
 
         # Saves the Plot of Source Current X Current Error Mean
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
@@ -90,10 +90,10 @@ class AccuracyTest:
         plt.ylabel('Leakage Current Error Mean [mA]')
         plt.title('Source Current X Leakage Current Mean')
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
-        name = 'SourceCurrent_X_CurrentErrorMean.jpg'
-        plt.savefig('SourceCurrent_X_CurrentErrorMean.jpg')
+        jpgname = 'SourceCurrent_X_CurrentErrorMean.jpg'
+        plt.savefig(jpgname)
         os.chdir(cwd)
-        print("Graphic file named '{}' saved successfully!".format(name))
+        print("Graphic file named '{}' saved successfully!".format(jpgname))
 
         # Saves the Plot of Source Current X Current Standard Deviation
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
@@ -104,12 +104,13 @@ class AccuracyTest:
         plt.ylabel('Leakage Current Standard Deviation [mA]')
         plt.title('Source Current X Current Standard Deviation')
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
-        name = 'SourceCurrent_X_CurrentStandardDeviation.jpg'
-        plt.savefig('SourceCurrent_X_CurrentStandardDeviation.jpg')
+        jpgname = 'SourceCurrent_X_CurrentStandardDeviation.jpg'
+        plt.savefig(jpgname)
         os.chdir(cwd)
-        print("Graphic file named '{}' saved successfully!".format(name))
+        print("Graphic file named '{}' saved successfully!".format(jpgname))
 
-        name = 'SourceCurrent_X_LeakageCurrentMean.csv'
+        # Saves the csv file of Source Current and Leakage Current Mean data
+        csvname = 'SourceCurrent_X_LeakageCurrentMean.csv'
         data = [['Source Current'], ['Leakage Current Mean']]
         column0 = data[0]
         column1 = data[1]
@@ -117,6 +118,32 @@ class AccuracyTest:
             column0.append(self.total_current[row])
             column1.append(self.total_mean[row])
         os.chdir(os.path.join(cwd, self.test_name + "\\Samples"))
-        np.savetxt(name, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
+        np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
-        print("CSV file named '{}' saved successfully!".format(name))
+        print("CSV file named '{}' saved successfully!".format(csvname))
+
+        # Saves the csv file of Source Current and Current Error Mean data
+        csvname = 'SourceCurrent_X_CurrentErrorMean.csv'
+        data = [['Source Current'], ['Current Error Mean']]
+        column0 = data[0]
+        column1 = data[1]
+        for row in range(len(self.total_error)):
+            column0.append(self.total_current[row])
+            column1.append(self.total_error[row])
+        os.chdir(os.path.join(cwd, self.test_name + "\\Samples"))
+        np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
+        os.chdir(cwd)
+        print("CSV file named '{}' saved successfully!".format(csvname))
+
+        # Saves the csv file of Source Current and Current Standard Deviation data
+        csvname = 'SourceCurrent_X_CurrentStandardDeviation.csv'
+        data = [['Source Current'], ['Current Standard Deviation']]
+        column0 = data[0]
+        column1 = data[1]
+        for row in range(len(self.total_std)):
+            column0.append(self.total_current[row])
+            column1.append(self.total_std[row])
+        os.chdir(os.path.join(cwd, self.test_name + "\\Samples"))
+        np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
+        os.chdir(cwd)
+        print("CSV file named '{}' saved successfully!".format(csvname))
