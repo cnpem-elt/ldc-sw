@@ -54,6 +54,7 @@ class LDC:
         self.ppc = (np_samples.max() - np_samples.min())
         self.mean_error = abs(np_error.mean())
         self.std_dev = np_samples.std()
+
         print("Mean: {0:.3f} mA".format(self.mean))
         print("Maximum: {0:.3f} mA".format(self.maximum))
         print("Minimum: {0:.3f} mA".format(self.minimum))

@@ -28,7 +28,7 @@ class AccuracyTest:
         self.total_steps = 0
         print("Accuracy Test module activated!")
 
-    def start(self, step, minimum, maximum):
+    def start(self, step, minimum, maximum, duration):
         # Prepare the directories and starting values
         self.test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
         self.test_name = "AccuracyTest"+self.test_date
@@ -48,7 +48,7 @@ class AccuracyTest:
             print("Waiting for acquisition...\n")
             print("Values for {0:.3f} mA".format(current * 1000))
             print('--' * 20)
-            ldc.read_ground_leakage(10)
+            ldc.read_ground_leakage(duration)
             print('--' * 20)
             # Save the files in the requested directories
             os.chdir(os.path.join(cwd, self.test_name+"\\Plots"))
