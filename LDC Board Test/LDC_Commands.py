@@ -72,7 +72,7 @@ class LDC:
             column0.append(self.samples[row])
             column1.append(self.time_samples[row])
         np.savetxt(name, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
-        print("CSV file named '{}' saved successfully!".format(name))
+        return "CSV file named '{}' saved successfully!".format(name)
 
     def plot_graphic(self):
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
@@ -82,7 +82,7 @@ class LDC:
         plt.xlabel('Time [s]')
         plt.ylabel('Leakage Current [mA]')
         plt.title('Leakage Current')
-        plt.show()
+        return plt.show()
 
     def save_graphic(self):
         test_name = self.test_time.strftime('%d_%m_%Y-%H_%M_%S')
@@ -95,4 +95,4 @@ class LDC:
         plt.ylabel('Leakage Current [mA]')
         plt.title('Leakage Current')
         plt.savefig(name)
-        print("Graphic file named '{}' saved successfully!".format(name))
+        return "Graphic file named '{}' saved successfully!".format(name)

@@ -23,24 +23,22 @@ class AccuracyTest:
         self.total_std = []
         self.total_current = []
         self.total_ppc = []
-        self.test_date = 0
-        self.test_name = 0
-        self.total_steps = 0
+        self.test_name = ''
         print("Accuracy Test module activated!")
 
     def start(self, step, minimum, maximum, duration):
         # Prepare the directories and starting values
-        self.test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
-        self.test_name = "AccuracyTest"+self.test_date
+        test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
+        self.test_name = "AccuracyTest"+test_date
         os.makedirs(os.path.join(cwd, self.test_name))
         os.makedirs(os.path.join(cwd, self.test_name+"\\Samples"))
         os.makedirs(os.path.join(cwd, self.test_name+"\\Plots"))
         span = maximum - minimum
-        self.total_steps = round(span / step) + 1
+        total_steps = round(span / step) + 1
         # Do the tests for every specified step
         print("Starting test...")
         ldc.scpi.enable_output()
-        for i in range(int(self.total_steps)):
+        for i in range(int(total_steps)):
             print("Setting current value...")
             current = minimum + (i * step)
             ldc.scpi.set_current(current)
