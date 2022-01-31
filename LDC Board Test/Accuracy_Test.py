@@ -24,6 +24,7 @@ class AccuracyTest:
         self.total_current = []
         self.total_ppc = []
         self.test_name = ''
+        self.total_steps = 0
         print("Accuracy Test module activated!")
 
     def start(self, step, minimum, maximum, duration):
@@ -34,11 +35,11 @@ class AccuracyTest:
         os.makedirs(os.path.join(cwd, self.test_name+"\\Samples"))
         os.makedirs(os.path.join(cwd, self.test_name+"\\Plots"))
         span = maximum - minimum
-        total_steps = round(span / step) + 1
+        self.total_steps = round(span / step) + 1
         # Do the tests for every specified step
         print("Starting test...")
         ldc.scpi.enable_output()
-        for i in range(int(total_steps)):
+        for i in range(int(self.total_steps)):
             current = minimum + (i * step)
             ldc.scpi.set_current(current)
             time.sleep(0.15)
@@ -61,20 +62,24 @@ class AccuracyTest:
             elif (i * step) == span:
                 print("Accuracy Test completed!")
         ldc.scpi.disable_output()
+        AccuracyTest.save_graphics(self)
+        AccuracyTest.save_csv_files(self)
 
+    def save_graphics(self):
         # Saves the Plot of Source Current X Mean Leakage Current
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
         ax.locator_params(axis='x', tight=True, nbins=20)
-        ax.plot(self.total_current, np.arange(0, total_steps, 1), label='Source Current')
-        ax.plot(self.total_mean, np.arange(0, total_steps, 1), label='Mean Leakage Current')
+        ax.plot(self.total_current, np.arange(0, self.total_steps, 1), marker='o', label='Source Current')
+        ax.plot(self.total_mean, np.arange(0, self.total_steps, 1), marker='o', label='Mean Leakage Current')
         plt.xlabel('Source Current [mA]')
-        plt.ylabel('Leakage Current Mean [mA]')
+        plt.ylabel('Test Steps')
         plt.title('Source Current X Leakage Current Mean')
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
         jpgname = 'SourceCurrent_X_MeanLeakageCurrent.jpg'
         plt.legend()
         plt.savefig(jpgname)
+        plt.close()
         os.chdir(cwd)
         print("Graphic file named '{}' saved successfully!".format(jpgname))
 
@@ -89,6 +94,7 @@ class AccuracyTest:
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
         jpgname = 'SourceCurrent_X_CurrentErrorMean.jpg'
         plt.savefig(jpgname)
+        plt.close()
         os.chdir(cwd)
         print("Graphic file named '{}' saved successfully!".format(jpgname))
 
@@ -103,12 +109,14 @@ class AccuracyTest:
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
         jpgname = 'SourceCurrent_X_CurrentStandardDeviation.jpg'
         plt.savefig(jpgname)
+        plt.close()
         os.chdir(cwd)
         print("Graphic file named '{}' saved successfully!".format(jpgname))
 
-        # Saves the csv file of Source Current and Leakage Current Mean data
-        csvname = 'SourceCurrent_X_LeakageCurrentMean.csv'
-        data = [['Source Current'], ['Leakage Current Mean']]
+    def save_csv_files(self):
+        # Saves the csv file of Source Current and Mean Leakage Current data
+        csvname = 'SourceCurrent_X_MeanLeakageCurrent.csv'
+        data = [['Source Current'], ['Mean Leakage Current']]
         column0 = data[0]
         column1 = data[1]
         for row in range(len(self.total_mean)):

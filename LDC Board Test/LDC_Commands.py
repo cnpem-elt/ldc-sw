@@ -95,4 +95,5 @@ class LDC:
         plt.ylabel('Leakage Current [mA]')
         plt.title('Leakage Current')
         plt.savefig(name)
+        plt.close()
         return "Graphic file named '{}' saved successfully!".format(name)
