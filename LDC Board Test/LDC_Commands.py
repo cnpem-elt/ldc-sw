@@ -39,11 +39,12 @@ class LDC:
         self.samples = []
         self.time_samples = []
         self.error = []
+        print("Waiting for acquisition...\n")
         for x in range(int(self.frequency * duration)):
             current_value = self.scpi.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
             self.samples.append((self.drs.read_bsmp_variable(53, 'float'))*1000)
             self.time_samples.append(round(x * self.period, 2))
-            self.error.append(current_value[0] - self.samples[x])
+            self.error.append((current_value[0]*1000) - self.samples[x])
             time.sleep(self.period)
             np_samples = np.array(self.samples)
             np_error = np.array(self.error)
@@ -54,7 +55,6 @@ class LDC:
         self.ppc = (np_samples.max() - np_samples.min())
         self.mean_error = abs(np_error.mean())
         self.std_dev = np_samples.std()
-
         print("Mean: {0:.3f} mA".format(self.mean))
         print("Maximum: {0:.3f} mA".format(self.maximum))
         print("Minimum: {0:.3f} mA".format(self.minimum))

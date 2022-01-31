@@ -98,7 +98,8 @@ class SCPI:
         """
         voltage_value = self.instrument.query_ascii_values(':MEASure:VOLTage:DC? (%s)' % '@1')
         current_value = self.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
-        return "Output Voltage: %.3fV\nOutput Current: %.3fA" % (voltage_value[0], current_value[0])
+        print("Output Voltage: {0:.3f}V".format(voltage_value[0]))
+        print("Output Current: {0:.3f}A".format(current_value[0]))
 
     def measure_current(self):
         """

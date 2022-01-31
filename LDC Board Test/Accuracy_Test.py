@@ -39,15 +39,12 @@ class AccuracyTest:
         print("Starting test...")
         ldc.scpi.enable_output()
         for i in range(int(total_steps)):
-            print("Setting current value...")
             current = minimum + (i * step)
             ldc.scpi.set_current(current)
             time.sleep(0.15)
-            print("Waiting for acquisition...\n")
             print("Values for {0:.3f} mA".format(current * 1000))
             print('--' * 20)
             ldc.read_ground_leakage(duration)
-            print('--' * 20)
             # Save the files in the requested directories
             os.chdir(os.path.join(cwd, self.test_name+"\\Plots"))
             ldc.save_graphic()
@@ -65,16 +62,18 @@ class AccuracyTest:
                 print("Accuracy Test completed!")
         ldc.scpi.disable_output()
 
-        # Saves the Plot of Source Current X Leakage Current Mean
+        # Saves the Plot of Source Current X Mean Leakage Current
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
         ax.locator_params(axis='x', tight=True, nbins=20)
-        ax.plot(self.total_current, self.total_mean, label='Source Current')
+        ax.plot(self.total_current, np.arange(0, total_steps, 1), label='Source Current')
+        ax.plot(self.total_mean, np.arange(0, total_steps, 1), label='Mean Leakage Current')
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Leakage Current Mean [mA]')
         plt.title('Source Current X Leakage Current Mean')
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
-        jpgname = 'SourceCurrent_X_LeakageCurrentMean.jpg'
+        jpgname = 'SourceCurrent_X_MeanLeakageCurrent.jpg'
+        plt.legend()
         plt.savefig(jpgname)
         os.chdir(cwd)
         print("Graphic file named '{}' saved successfully!".format(jpgname))
@@ -120,9 +119,9 @@ class AccuracyTest:
         os.chdir(cwd)
         print("CSV file named '{}' saved successfully!".format(csvname))
 
-        # Saves the csv file of Source Current and Current Error Mean data
+        # Saves the csv file of Source Current and Mean Current Error data
         csvname = 'SourceCurrent_X_CurrentErrorMean.csv'
-        data = [['Source Current'], ['Current Error Mean']]
+        data = [['Source Current'], ['Mean Current Error']]
         column0 = data[0]
         column1 = data[1]
         for row in range(len(self.total_error)):
