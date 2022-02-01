@@ -21,12 +21,14 @@ class SCPI:
         :param protection_voltage: The desired protection voltage
         :type protection_voltage: float
 
-        :return: A string with the actual protection voltage value
+        :return: A float with the actual protection voltage value
+        :rtype: float
         """
         self.instrument.write(':SOURce1:FUNCtion:MODE %s' % 'CURRent')
         self.instrument.write(':SENSe1:VOLTage:DC:PROTection:LEVel %G' % protection_voltage)
         protection_value = self.instrument.query_ascii_values(':SENSe:VOLTage:DC:PROTection:LEVel?')
-        return "Output Protection Voltage: %.3fV" % protection_value[0]
+        pvoltage_result = float('{:.3f}'.format(protection_value[0]))
+        return pvoltage_result
 
     def set_protection_current(self, protection_current):
         """
@@ -35,12 +37,14 @@ class SCPI:
         :param protection_current: The desired protection current
         :type protection_current: float
 
-        :return: A string with the actual protection current value
+        :return: A float with the actual protection current value
+        :rtype: float
         """
         self.instrument.write(':SOURce1:FUNCtion:MODE %s' % 'VOLTage')
         self.instrument.write(':SENSe:CURRent:DC:PROTection:LEVel %G' % protection_current)
         protection_value = self.instrument.query_ascii_values(':SENSe:CURRent:DC:PROTection:LEVel?')
-        return "Output Protection Current: %.3fA" % protection_value[0]
+        pcurrent_result = float('{:.3f}'.format(protection_value[0]))
+        return pcurrent_result
 
     def set_voltage(self, voltage):
         """
@@ -49,13 +53,15 @@ class SCPI:
         :param voltage: The desired value in Volts
         :type voltage: float
 
-        :return: A string with the actual output voltage value
+        :return: A float with the actual output voltage value
+        :rtype: float
         """
         self.instrument.write(':SOURce1:FUNCtion:MODE %s' % 'VOLTage')
         self.instrument.write(':SOURce1:CURRent:LEVel:IMMediate:AMPLitude %G' % voltage)
         print("The source voltage is set to %.3fV" % voltage)
         voltage_value = self.instrument.query_ascii_values(':MEASure:VOLTage:DC? (%s)' % '@1')
-        return "Output Voltage: %.3fV" % voltage_value[0]
+        voltage_result = float('{:.3f}'.format(voltage_value[0]))
+        return voltage_result
 
     def set_current(self, current):
         """
@@ -65,18 +71,21 @@ class SCPI:
         :type current: float
 
         :return: A string with the actual output current value
+        :rtype: float
         """
         self.instrument.write(':SOURce1:FUNCtion:MODE %s' % 'CURRent')
         self.instrument.write(':SOURce1:CURRent:LEVel:IMMediate:AMPLitude %G' % current)
         print("The source current is set to %.3fA" % current)
         current_value = self.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
-        return "Output Current: %.3fA" % current_value[0]
+        current_result = float('{:.3f}'.format(current_value[0]))
+        return current_result
 
     def enable_output(self):
         """
         Enables the instrument output
 
         :return: A string confirming the operation
+        :rtype: str
         """
         self.instrument.write(':OUTPut1:STATe %d' % 1)
         return "Output enabled successfully!"
@@ -86,6 +95,7 @@ class SCPI:
         Disables the instrument output
 
         :return: A string confirming the operation
+        :rtype: str
         """
         self.instrument.write(':OUTPut1:STATe %d' % 0)
         return "Output disabled successfully!"
@@ -95,26 +105,36 @@ class SCPI:
         Print the actual output values for current and voltage
 
         :return: A string with the actual values
+        :rtype: str
         """
         voltage_value = self.instrument.query_ascii_values(':MEASure:VOLTage:DC? (%s)' % '@1')
+        voltage_result = float('{:.3f}'.format(voltage_value[0]))
         current_value = self.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
-        print("Output Voltage: {0:.3f}V".format(voltage_value[0]))
-        print("Output Current: {0:.3f}A".format(current_value[0]))
+        current_result = float('{:.3f}'.format(current_value[0]))
+        values_dict = {
+            "voltage": voltage_result,
+            "current": current_result
+        }
+        return values_dict
 
     def measure_current(self):
         """
-        Print the actual output voltage value
+        Print the actual output current value
 
-        :return: A string with the actual voltage value in Volts
+        :return: A float with the actual current value in Amperes
+        :rtype: float
         """
         current_value = self.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
-        return "Output Current: %.3fA" % current_value[0]
+        current_result = float('{:.3f}'.format(current_value[0]))
+        return current_result
 
     def measure_voltage(self):
         """
-        Print the actual output current value
+        Print the actual output voltage value
 
-        :return: A string with the actual current value in Amperes
+        :return: A float with the actual voltage value in Volts
+        :rtype: float
         """
         voltage_value = self.instrument.query_ascii_values(':MEASure:VOLTage:DC? (%s)' % '@1')
-        return "Output Voltage: %.3fV" % voltage_value[0]
+        voltage_result = float('{:.3f}'.format(voltage_value[0]))
+        return voltage_result
