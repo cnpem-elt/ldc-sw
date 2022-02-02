@@ -20,7 +20,9 @@ class LDC:
         from SCPI_Commands import SCPI
 
         self.drs = pydrs.SerialDRS()
-        self.drs.connect('COM2')  # PyDRS Communication with IIB
+        port_num = int(input("Insert the number of the COM port: "))
+        com_port = 'COM' + str(port_num)
+        self.drs.connect(com_port)  # PyDRS Communication with IIB
         instrument = input("Insert instrument id: ")
         self.scpi = SCPI(instrument)
         self.frequency = 10
@@ -126,3 +128,20 @@ class LDC:
         plt.savefig(name)
         plt.close()
         return "Graphic file named '{}' saved successfully!".format(name)
+
+
+if __name__ == '__main__':
+    ldc = LDC()
+    read_current = float(input("Insert the desired current, in Amperes: "))
+    read_duration = int(input("Insert the duration of the ground leakage measure, in seconds: "))
+    ldc.scpi.set_current(read_current)
+    time.sleep(0.15)
+    ldc.read_ground_leakage(read_duration)
+    ldc.scpi.disable_output()
+    ldc.plot_graphic()
+    answer = int(input("Save plot and csv file? 1(yes)/0(No): "))
+    if answer == 1:
+        ldc.save_graphic()
+        ldc.save_csv_file()
+    elif answer == 0:
+        exit()
