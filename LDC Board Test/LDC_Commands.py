@@ -1,9 +1,12 @@
 # coding utf-8
 # LDC Commands
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+from tkinter import Tk
+from tkinter.filedialog import askdirectory
 from datetime import datetime
 
 
@@ -131,6 +134,7 @@ class LDC:
 
 
 if __name__ == '__main__':
+    cwd = os.getcwd()
     ldc = LDC()
     read_current = float(input("Insert the desired current, in Amperes: "))
     read_duration = int(input("Insert the duration of the ground leakage measure, in seconds: "))
@@ -141,7 +145,14 @@ if __name__ == '__main__':
     ldc.plot_graphic()
     answer = int(input("Save plot and csv file? 1(yes)/0(No): "))
     if answer == 1:
+        Tk().withdraw()
+        path = askdirectory(title='Select Folder')
+        ldc_test = 'LDC_Test-'+ldc.test_time.strftime('%d_%m_%Y-%H_%M_%S')
+        os.makedirs(os.path.join(path, ldc_test))
+        os.chdir(os.path.join(path, ldc_test))
         ldc.save_graphic()
         ldc.save_csv_file()
+        print("Saved files of LDC Test {}!".format(ldc_test))
+        os.chdir(cwd)
     elif answer == 0:
         exit()

@@ -6,9 +6,11 @@ import numpy as np
 import os
 import time
 from datetime import datetime
+from tkinter import Tk
+from tkinter.filedialog import askdirectory
 from LDC_Commands import LDC
 
-# Gets the current directory to save the test data
+# Gets the current directory to return in the end of the test
 cwd = os.getcwd()
 
 # LDC Functions start
@@ -29,6 +31,7 @@ class AccuracyTest:
         self.total_ppc = []
         self.test_name = ''
         self.total_steps = 0
+        self.path = ''
         print("Accuracy Test module activated!")
 
     def start(self, step, minimum, maximum, duration):
@@ -44,11 +47,13 @@ class AccuracyTest:
         :param duration: Duration of the measure in each step, in seconds
         :type duration: int
         """
+        Tk().withdraw()
+        self.path = askdirectory(title='Select Folder')
         test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
         self.test_name = "AccuracyTest"+test_date
-        os.makedirs(os.path.join(cwd, self.test_name))
-        os.makedirs(os.path.join(cwd, self.test_name+"\\Samples"))
-        os.makedirs(os.path.join(cwd, self.test_name+"\\Plots"))
+        os.makedirs(os.path.join(self.path, self.test_name))
+        os.makedirs(os.path.join(self.path, self.test_name+"\\Samples"))
+        os.makedirs(os.path.join(self.path, self.test_name+"\\Plots"))
         span = maximum - minimum
         self.total_steps = round(span/step) + 1
         print("Starting test...")
@@ -61,9 +66,9 @@ class AccuracyTest:
             time.sleep(0.15)
             ldc.read_ground_leakage(duration)
             # Change to the created directories and saves all acquired information
-            os.chdir(os.path.join(cwd, self.test_name+"\\Plots"))
+            os.chdir(os.path.join(self.path, self.test_name+"\\Plots"))
             ldc.save_graphic()
-            os.chdir(os.path.join(cwd, self.test_name+"\\Samples"))
+            os.chdir(os.path.join(self.path, self.test_name+"\\Samples"))
             ldc.save_csv_file()
             os.chdir(cwd)
             self.total_mean.append(ldc.mean)
@@ -95,7 +100,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Test Steps')
         plt.title('Source Current X Leakage Current Mean')
-        os.chdir(os.path.join(cwd, self.test_name+"\\Plots"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Plots"))
         jpgname = 'SourceCurrent_X_MeanLeakageCurrent.jpg'
         plt.legend()
         plt.savefig(jpgname)
@@ -111,7 +116,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Mean Current Error [mA]')
         plt.title('Source Current X Mean Current Error')
-        os.chdir(os.path.join(cwd, self.test_name+"\\Plots"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Plots"))
         jpgname = 'SourceCurrent_X_MeanCurrentError.jpg'
         plt.savefig(jpgname)
         plt.close()
@@ -126,7 +131,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Leakage Current Standard Deviation [mA]')
         plt.title('Source Current X Current Standard Deviation')
-        os.chdir(os.path.join(cwd, self.test_name+"\\Plots"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Plots"))
         jpgname = 'SourceCurrent_X_CurrentStandardDeviation.jpg'
         plt.savefig(jpgname)
         plt.close()
@@ -145,7 +150,7 @@ class AccuracyTest:
         for row in range(len(self.total_mean)):
             column0.append(self.total_current[row])
             column1.append(self.total_mean[row])
-        os.chdir(os.path.join(cwd, self.test_name+"\\Samples"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' saved successfully!".format(csvname))
@@ -158,7 +163,7 @@ class AccuracyTest:
         for row in range(len(self.total_error)):
             column0.append(self.total_current[row])
             column1.append(self.total_error[row])
-        os.chdir(os.path.join(cwd, self.test_name+"\\Samples"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' saved successfully!".format(csvname))
@@ -171,7 +176,7 @@ class AccuracyTest:
         for row in range(len(self.total_std)):
             column0.append(self.total_current[row])
             column1.append(self.total_std[row])
-        os.chdir(os.path.join(cwd, self.test_name+"\\Samples"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' saved successfully!".format(csvname))
