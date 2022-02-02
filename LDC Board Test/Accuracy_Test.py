@@ -17,6 +17,9 @@ ldc = LDC()
 
 # Accuracy Test Properties and Functions
 class AccuracyTest:
+    """
+    Sets up the variables and commands to execute the accuracy test of the LDC board
+    """
     def __init__(self):
         self.total_mean = []
         self.total_error = []
@@ -28,7 +31,18 @@ class AccuracyTest:
         print("Accuracy Test module activated!")
 
     def start(self, step, minimum, maximum, duration):
-        # Prepare the directories and starting values
+        """
+        Executes the accuracy test of the LDC board
+
+        :param step: Current step for each measure of the test, in Amperes
+        :type step: float
+        :param minimum: Minimum current value for accuracy test, in Amperes
+        :type minimum: float
+        :param maximum: Maximum current value for accuracy test, in Amperes
+        :type maximum: float
+        :param duration: Duration of the measure in each step, in seconds
+        :type duration: int
+        """
         test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
         self.test_name = "AccuracyTest"+test_date
         os.makedirs(os.path.join(cwd, self.test_name))
@@ -36,17 +50,16 @@ class AccuracyTest:
         os.makedirs(os.path.join(cwd, self.test_name+"\\Plots"))
         span = maximum - minimum
         self.total_steps = round(span / step) + 1
-        # Do the tests for every specified step
         print("Starting test...")
         ldc.scpi.enable_output()
-        for i in range(int(self.total_steps)):
+        for i in range(int(self.total_steps)):  # Loop to read the ground leakage in each step
             current = minimum + (i * step)
             ldc.scpi.set_current(current)
             time.sleep(0.15)
             print("Values for {0:.3f} mA".format(current * 1000))
             print('--' * 20)
             ldc.read_ground_leakage(duration)
-            # Save the files in the requested directories
+            # Change to the created directories and saves all acquired information
             os.chdir(os.path.join(cwd, self.test_name+"\\Plots"))
             ldc.save_graphic()
             os.chdir(os.path.join(cwd, self.test_name+"\\Samples"))
@@ -66,6 +79,12 @@ class AccuracyTest:
         AccuracyTest.save_csv_files(self)
 
     def save_graphics(self):
+        """
+        Saves all the specific plots at the end of the accuracy test. The graphics are:\n
+        - Source Current x Mean Leakage Current
+        - Source Current x Mean Current Error
+        - Source Current X Current Standard Deviation
+        """
         # Saves the Plot of Source Current X Mean Leakage Current
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
@@ -83,16 +102,16 @@ class AccuracyTest:
         os.chdir(cwd)
         print("Graphic file named '{}' saved successfully!".format(jpgname))
 
-        # Saves the Plot of Source Current X Current Error Mean
+        # Saves the Plot of Source Current X Mean Current Error
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
         ax.locator_params(axis='x', tight=True, nbins=20)
         ax.plot(self.total_current, self.total_error)
         plt.xlabel('Source Current [mA]')
-        plt.ylabel('Leakage Current Error Mean [mA]')
-        plt.title('Source Current X Leakage Current Mean')
+        plt.ylabel('Mean Current Error [mA]')
+        plt.title('Source Current X Mean Current Error')
         os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
-        jpgname = 'SourceCurrent_X_CurrentErrorMean.jpg'
+        jpgname = 'SourceCurrent_X_MeanCurrentError.jpg'
         plt.savefig(jpgname)
         plt.close()
         os.chdir(cwd)
@@ -114,6 +133,9 @@ class AccuracyTest:
         print("Graphic file named '{}' saved successfully!".format(jpgname))
 
     def save_csv_files(self):
+        """
+        Saves all the csv files of the specific graphics data at the end of the accuracy test.
+        """
         # Saves the csv file of Source Current and Mean Leakage Current data
         csvname = 'SourceCurrent_X_MeanLeakageCurrent.csv'
         data = [['Source Current'], ['Mean Leakage Current']]

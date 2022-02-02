@@ -2,6 +2,9 @@
 # SCPI Commands
 
 class SCPI:
+    """
+    Sets up a series of commands to use with an instrument compatible with SCPI communication
+    """
     def __init__(self, instrument_id):
         """
         Connects to the desired instrument to start SCPI communication
@@ -105,7 +108,7 @@ class SCPI:
         Print the actual output values for current and voltage
 
         :return: A string with the actual values
-        :rtype: str
+        :rtype: dict
         """
         voltage_value = self.instrument.query_ascii_values(':MEASure:VOLTage:DC? (%s)' % '@1')
         voltage_result = float('{:.3f}'.format(voltage_value[0]))
