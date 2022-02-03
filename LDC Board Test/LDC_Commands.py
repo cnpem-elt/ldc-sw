@@ -132,12 +132,24 @@ class LDC:
         plt.close()
         return "Graphic file named '{}' saved successfully!".format(name)
 
+    def degauss(self):
+        self.scpi.disable_output()
+        self.drs.reset_interlocks()
+        time.sleep(0.3)
+        self.drs.reset_interlocks()
+        return "Applied degaussing process!"
+
 
 if __name__ == '__main__':
     cwd = os.getcwd()
     ldc = LDC()
     read_current = float(input("Insert the desired current, in Amperes: "))
     read_duration = int(input("Insert the duration of the ground leakage measure, in seconds: "))
+    apply_degauss = int(input("Apply the degaussing process? 1(yes)/0(No):"))
+    if apply_degauss == 1:
+        ldc.degauss()
+    elif apply_degauss == 0:
+        pass
     ldc.scpi.set_current(read_current)
     time.sleep(0.15)
     ldc.read_ground_leakage(read_duration)
@@ -154,5 +166,6 @@ if __name__ == '__main__':
         ldc.save_csv_file()
         print("Saved files of LDC Test {}!".format(ldc_test))
         os.chdir(cwd)
+        exit()
     elif answer == 0:
         exit()

@@ -188,4 +188,9 @@ if __name__ == '__main__':
     tminimum = float(input("Insert the minimum current of the test, in Amperes: "))
     tmaximum = float(input("Insert the maximum current of the test, in Amperes: "))
     tduration = int(input("Insert the duration of the measure steps, in seconds: "))
+    apply_degauss = int(input("Apply the degaussing process? 1(yes)/0(No):"))
+    if apply_degauss == 1:
+        ldc.degauss()
+    elif apply_degauss == 0:
+        pass
     acc.start(tstep, tminimum, tmaximum, tduration)
