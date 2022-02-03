@@ -1,7 +1,7 @@
-# coding utf-8
-# LDC Commands
-import os
+#!/usr/bin/env python3
+# LDC_Commands.py
 
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import time

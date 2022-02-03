@@ -1,5 +1,5 @@
-# coding utf-8
-# LDC Board Test
+#!/usr/bin/env python3
+# Accuracy_Test.py
 
 import matplotlib.pyplot as plt
 import numpy as np
