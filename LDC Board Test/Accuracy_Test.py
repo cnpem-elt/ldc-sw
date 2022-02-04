@@ -1,14 +1,16 @@
-# coding utf-8
-# LDC Board Test
+#!/usr/bin/env python3
+# Accuracy_Test.py
 
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import time
 from datetime import datetime
+from tkinter import Tk
+from tkinter.filedialog import askdirectory
 from LDC_Commands import LDC
 
-# Gets the current directory to save the test data
+# Gets the current directory to return in the end of the test
 cwd = os.getcwd()
 
 # LDC Functions start
@@ -17,6 +19,10 @@ ldc = LDC()
 
 # Accuracy Test Properties and Functions
 class AccuracyTest:
+    """
+    Sets up the variables and commands to execute the accuracy test of the LDC board
+    """
+
     def __init__(self):
         self.total_mean = []
         self.total_error = []
@@ -25,47 +31,66 @@ class AccuracyTest:
         self.total_ppc = []
         self.test_name = ''
         self.total_steps = 0
+        self.path = ''
         print("Accuracy Test module activated!")
 
     def start(self, step, minimum, maximum, duration):
-        # Prepare the directories and starting values
+        """
+        Executes the accuracy test of the LDC board
+
+        :param step: Current step for each measure of the test, in Amperes
+        :type step: float
+        :param minimum: Minimum current value for accuracy test, in Amperes
+        :type minimum: float
+        :param maximum: Maximum current value for accuracy test, in Amperes
+        :type maximum: float
+        :param duration: Duration of the measure in each step, in seconds
+        :type duration: int
+        """
+        Tk().withdraw()
+        self.path = askdirectory(title='Select Folder')
         test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
         self.test_name = "AccuracyTest"+test_date
-        os.makedirs(os.path.join(cwd, self.test_name))
-        os.makedirs(os.path.join(cwd, self.test_name+"\\Samples"))
-        os.makedirs(os.path.join(cwd, self.test_name+"\\Plots"))
+        os.makedirs(os.path.join(self.path, self.test_name))
+        os.makedirs(os.path.join(self.path, self.test_name+"\\Samples"))
+        os.makedirs(os.path.join(self.path, self.test_name+"\\Plots"))
         span = maximum - minimum
-        self.total_steps = round(span / step) + 1
-        # Do the tests for every specified step
+        self.total_steps = round(span/step) + 1
         print("Starting test...")
         ldc.scpi.enable_output()
-        for i in range(int(self.total_steps)):
-            current = minimum + (i * step)
+        for i in range(int(self.total_steps)):  # Loop to read the ground leakage in each step
+            current = minimum + (i*step)
             ldc.scpi.set_current(current)
+            print("Values for {0:.3f} mA".format(current*1000))
+            print('--'*20)
             time.sleep(0.15)
-            print("Values for {0:.3f} mA".format(current * 1000))
-            print('--' * 20)
             ldc.read_ground_leakage(duration)
-            # Save the files in the requested directories
-            os.chdir(os.path.join(cwd, self.test_name+"\\Plots"))
+            # Change to the created directories and saves all acquired information
+            os.chdir(os.path.join(self.path, self.test_name+"\\Plots"))
             ldc.save_graphic()
-            os.chdir(os.path.join(cwd, self.test_name+"\\Samples"))
+            os.chdir(os.path.join(self.path, self.test_name+"\\Samples"))
             ldc.save_csv_file()
             os.chdir(cwd)
             self.total_mean.append(ldc.mean)
             self.total_error.append(ldc.mean_error)
             self.total_std.append(ldc.std_dev)
-            self.total_current.append(current * 1000)
+            self.total_current.append(current*1000)
             self.total_ppc.append(ldc.ppc)
-            if (i * step) < span:
+            if (i*step) < span:
                 print("Acquisition completed! Moving for next step...\n")
-            elif (i * step) == span:
+            elif (i*step) == span:
                 print("Accuracy Test completed!")
         ldc.scpi.disable_output()
         AccuracyTest.save_graphics(self)
         AccuracyTest.save_csv_files(self)
 
     def save_graphics(self):
+        """
+        Saves all the specific plots at the end of the accuracy test. The graphics are:\n
+        - Source Current x Mean Leakage Current
+        - Source Current x Mean Current Error
+        - Source Current X Current Standard Deviation
+        """
         # Saves the Plot of Source Current X Mean Leakage Current
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
@@ -75,7 +100,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Test Steps')
         plt.title('Source Current X Leakage Current Mean')
-        os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Plots"))
         jpgname = 'SourceCurrent_X_MeanLeakageCurrent.jpg'
         plt.legend()
         plt.savefig(jpgname)
@@ -83,16 +108,16 @@ class AccuracyTest:
         os.chdir(cwd)
         print("Graphic file named '{}' saved successfully!".format(jpgname))
 
-        # Saves the Plot of Source Current X Current Error Mean
+        # Saves the Plot of Source Current X Mean Current Error
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
         ax.locator_params(axis='x', tight=True, nbins=20)
         ax.plot(self.total_current, self.total_error)
         plt.xlabel('Source Current [mA]')
-        plt.ylabel('Leakage Current Error Mean [mA]')
-        plt.title('Source Current X Leakage Current Mean')
-        os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
-        jpgname = 'SourceCurrent_X_CurrentErrorMean.jpg'
+        plt.ylabel('Mean Current Error [mA]')
+        plt.title('Source Current X Mean Current Error')
+        os.chdir(os.path.join(self.path, self.test_name+"\\Plots"))
+        jpgname = 'SourceCurrent_X_MeanCurrentError.jpg'
         plt.savefig(jpgname)
         plt.close()
         os.chdir(cwd)
@@ -106,7 +131,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Leakage Current Standard Deviation [mA]')
         plt.title('Source Current X Current Standard Deviation')
-        os.chdir(os.path.join(cwd, self.test_name + "\\Plots"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Plots"))
         jpgname = 'SourceCurrent_X_CurrentStandardDeviation.jpg'
         plt.savefig(jpgname)
         plt.close()
@@ -114,6 +139,9 @@ class AccuracyTest:
         print("Graphic file named '{}' saved successfully!".format(jpgname))
 
     def save_csv_files(self):
+        """
+        Saves all the csv files of the specific graphics data at the end of the accuracy test.
+        """
         # Saves the csv file of Source Current and Mean Leakage Current data
         csvname = 'SourceCurrent_X_MeanLeakageCurrent.csv'
         data = [['Source Current'], ['Mean Leakage Current']]
@@ -122,7 +150,7 @@ class AccuracyTest:
         for row in range(len(self.total_mean)):
             column0.append(self.total_current[row])
             column1.append(self.total_mean[row])
-        os.chdir(os.path.join(cwd, self.test_name + "\\Samples"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' saved successfully!".format(csvname))
@@ -135,7 +163,7 @@ class AccuracyTest:
         for row in range(len(self.total_error)):
             column0.append(self.total_current[row])
             column1.append(self.total_error[row])
-        os.chdir(os.path.join(cwd, self.test_name + "\\Samples"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' saved successfully!".format(csvname))
@@ -148,7 +176,21 @@ class AccuracyTest:
         for row in range(len(self.total_std)):
             column0.append(self.total_current[row])
             column1.append(self.total_std[row])
-        os.chdir(os.path.join(cwd, self.test_name + "\\Samples"))
+        os.chdir(os.path.join(self.path, self.test_name+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' saved successfully!".format(csvname))
+
+
+if __name__ == '__main__':
+    acc = AccuracyTest()
+    tstep = float(input("Insert the current step, in Amperes: "))
+    tminimum = float(input("Insert the minimum current of the test, in Amperes: "))
+    tmaximum = float(input("Insert the maximum current of the test, in Amperes: "))
+    tduration = int(input("Insert the duration of the measure steps, in seconds: "))
+    apply_degauss = int(input("Apply the degaussing process? 1(yes)/0(No):"))
+    if apply_degauss == 1:
+        ldc.degauss()
+    elif apply_degauss == 0:
+        pass
+    acc.start(tstep, tminimum, tmaximum, tduration)

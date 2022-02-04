@@ -1,26 +1,33 @@
-# coding utf-8
-# LDC Commands
+#!/usr/bin/env python3
+# LDC_Commands.py
 
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+from tkinter import Tk
+from tkinter.filedialog import askdirectory
 from datetime import datetime
 
 
-# LDC Functions
 class LDC:
+    """
+    Sets up the commands to control the Leakage Detection Circuit board alongside an instrument with SCPI communication
+    """
+
     def __init__(self):
+        """
+        Instantiates the class, all necessary variables and modules
+        """
         import pydrs
         from SCPI_Commands import SCPI
 
-        # PyDRS Communication with IIB
         self.drs = pydrs.SerialDRS()
-        self.drs.connect('COM2')
-
-        # SCPI Communication module start
+        port_num = int(input("Insert the number of the COM port: "))
+        com_port = 'COM' + str(port_num)
+        self.drs.connect(com_port)  # PyDRS Communication with IIB
         instrument = input("Insert instrument id: ")
         self.scpi = SCPI(instrument)
-
         self.frequency = 10
         self.period = 1 / self.frequency
         self.mean = 0
@@ -36,9 +43,18 @@ class LDC:
         print("LDC functions enabled!")
 
     def read_ground_leakage(self, duration):
-        self.samples = []
-        self.time_samples = []
-        self.error = []
+        """
+        Reads the ground leakage current detected with the LDC board
+
+        :param duration: Duration of the measurement in seconds
+        :type duration: int
+
+        :return: The measured values for the leakage current
+        :rtype: str
+        """
+        self.samples.clear()
+        self.time_samples.clear()
+        self.error.clear()
         print("Waiting for acquisition...\n")
         for x in range(int(self.frequency * duration)):
             current_value = self.scpi.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
@@ -55,14 +71,21 @@ class LDC:
         self.ppc = (np_samples.max() - np_samples.min())
         self.mean_error = abs(np_error.mean())
         self.std_dev = np_samples.std()
-        print("Mean: {0:.3f} mA".format(self.mean))
-        print("Maximum: {0:.3f} mA".format(self.maximum))
-        print("Minimum: {0:.3f} mA".format(self.minimum))
-        print("Peak to peak: {0:.3f} mA".format(self.ppc))
-        print("Mean Error: {0:.3f} mA".format(self.mean_error))
-        print("Standard Deviation: {0:.3f} mA\n".format(self.std_dev))
+        return print("Mean: {0:.3f} mA\n"
+                     "Maximum: {1:.3f} mA\n"
+                     "Minimum: {2:.3f} mA\n"
+                     "Peak to peak: {3:.3f} mA\n"
+                     "Mean Error: {4:.3f} mA\n"
+                     "Standard Deviation: {5:.3f} mA\n".format(self.mean, self.maximum, self.minimum,
+                                                               self.ppc, self.mean_error, self.std_dev))
 
     def save_csv_file(self):
+        """
+        Saves the data of a ground leakage measure in a csv format file
+
+        :return: A string confirming the execution
+        :rtype: str
+        """
         test_name = self.test_time.strftime('%d_%m_%Y-%H_%M_%S')
         name = test_name + '.csv'
         data = [['Leakage Current'], ['Time']]
@@ -75,6 +98,11 @@ class LDC:
         return "CSV file named '{}' saved successfully!".format(name)
 
     def plot_graphic(self):
+        """
+        Plots the graphic of the ground leakage measure
+
+        :return: Return the matplotlib window with the measure plot
+        """
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
         ax.locator_params(axis='x', tight=True, nbins=30)
@@ -85,6 +113,12 @@ class LDC:
         return plt.show()
 
     def save_graphic(self):
+        """
+        Saves a jpg file of the ground leakage graphic
+
+        :return: Returns a string confirming the jpg file saving
+        :rtype: str
+        """
         test_name = self.test_time.strftime('%d_%m_%Y-%H_%M_%S')
         name = test_name + '.jpg'
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
@@ -97,3 +131,41 @@ class LDC:
         plt.savefig(name)
         plt.close()
         return "Graphic file named '{}' saved successfully!".format(name)
+
+    def degauss(self):
+        self.scpi.disable_output()
+        self.drs.reset_interlocks()
+        time.sleep(0.3)
+        self.drs.reset_interlocks()
+        return "Applied degaussing process!"
+
+
+if __name__ == '__main__':
+    cwd = os.getcwd()
+    ldc = LDC()
+    read_current = float(input("Insert the desired current, in Amperes: "))
+    read_duration = int(input("Insert the duration of the ground leakage measure, in seconds: "))
+    apply_degauss = int(input("Apply the degaussing process? 1(yes)/0(No):"))
+    if apply_degauss == 1:
+        ldc.degauss()
+    elif apply_degauss == 0:
+        pass
+    ldc.scpi.set_current(read_current)
+    time.sleep(0.15)
+    ldc.read_ground_leakage(read_duration)
+    ldc.scpi.disable_output()
+    ldc.plot_graphic()
+    answer = int(input("Save plot and csv file? 1(yes)/0(No): "))
+    if answer == 1:
+        Tk().withdraw()
+        path = askdirectory(title='Select Folder')
+        ldc_test = 'LDC_Test-'+ldc.test_time.strftime('%d_%m_%Y-%H_%M_%S')
+        os.makedirs(os.path.join(path, ldc_test))
+        os.chdir(os.path.join(path, ldc_test))
+        ldc.save_graphic()
+        ldc.save_csv_file()
+        print("Saved files of LDC Test {}!".format(ldc_test))
+        os.chdir(cwd)
+        exit()
+    elif answer == 0:
+        exit()
