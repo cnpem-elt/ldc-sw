@@ -62,14 +62,15 @@ class AccuracyTest:
             current = minimum + (i*step)
             ldc.scpi.set_current(current)
             print("Values for {0:.3f} mA".format(current*1000))
+            test_name = '{0:.1f}mA Leakage Current'.format(current*1000)
             print('--'*20)
             time.sleep(0.15)
             ldc.read_ground_leakage(duration)
             # Change to the created directories and saves all acquired information
             os.chdir(os.path.join(self.path, self.test_name+"\\Plots"))
-            ldc.save_graphic()
+            ldc.save_graphic(test_name)
             os.chdir(os.path.join(self.path, self.test_name+"\\Samples"))
-            ldc.save_csv_file()
+            ldc.save_csv_file(test_name)
             os.chdir(cwd)
             self.total_mean.append(ldc.mean)
             self.total_error.append(ldc.mean_error)
@@ -77,7 +78,7 @@ class AccuracyTest:
             self.total_current.append(current*1000)
             self.total_ppc.append(ldc.ppc)
             if (i*step) < span:
-                print("Acquisition completed! Moving for next step...\n")
+                print("Acquisition completed! Moving to the next step...\n")
             elif (i*step) == span:
                 print("Accuracy Test completed!")
         ldc.scpi.disable_output()
