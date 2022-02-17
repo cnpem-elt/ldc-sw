@@ -79,15 +79,16 @@ class LDC:
                      "Standard Deviation: {5:.3f} mA\n".format(self.mean, self.maximum, self.minimum,
                                                                self.ppc, self.mean_error, self.std_dev))
 
-    def save_csv_file(self):
+    def save_csv_file(self, file_name='Leakage Current'):
         """
         Saves the data of a ground leakage measure in a csv format file
+        :argument file_name: Gives a custom name to the file. Default gives 'Leakage Current'
 
         :return: A string confirming the execution
         :rtype: str
         """
         test_name = self.test_time.strftime('%d_%m_%Y-%H_%M_%S')
-        name = test_name + '.csv'
+        name = file_name+'-'+test_name+'.csv'
         data = [['Leakage Current'], ['Time']]
         column0 = data[0]
         column1 = data[1]
@@ -97,7 +98,7 @@ class LDC:
         np.savetxt(name, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         return "CSV file named '{}' saved successfully!".format(name)
 
-    def plot_graphic(self):
+    def plot_graphic(self, graph_name='Leakage Current'):
         """
         Plots the graphic of the ground leakage measure
 
@@ -109,10 +110,10 @@ class LDC:
         ax.plot(self.time_samples, self.samples)
         plt.xlabel('Time [s]')
         plt.ylabel('Leakage Current [mA]')
-        plt.title('Leakage Current')
+        plt.title(graph_name)
         return plt.show()
 
-    def save_graphic(self):
+    def save_graphic(self, graph_name='Leakage Current'):
         """
         Saves a jpg file of the ground leakage graphic
 
@@ -120,14 +121,14 @@ class LDC:
         :rtype: str
         """
         test_name = self.test_time.strftime('%d_%m_%Y-%H_%M_%S')
-        name = test_name + '.jpg'
+        name = graph_name+'-'+test_name+'.jpg'
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
         ax.locator_params(axis='x', tight=True, nbins=30)
         ax.plot(self.time_samples, self.samples)
         plt.xlabel('Time [s]')
         plt.ylabel('Leakage Current [mA]')
-        plt.title('Leakage Current')
+        plt.title(graph_name)
         plt.savefig(name)
         plt.close()
         return "Graphic file named '{}' saved successfully!".format(name)
