@@ -2,7 +2,7 @@
 
 ## What is LDC?
 The Leakage Detection Circuit is an electronic board developed by the **Electronics Systems and Instrumentation 
-Group** (SEI) of the **National Center of Research and Materials** ([CNPEM](https://cnpem.br/)) in Brazil.<br>
+Group** (SEI) of the **National Center of Research in Energy and Materials** ([CNPEM](https://cnpem.br/)) in Brazil.<br>
 The board measures the leakage current of the Sirius power supplies then sends its values to store and plot in Sirius
 Archiver.<br>
 The objective of this application is to detect any problem with current leak and help to monitor the supplies during
@@ -12,7 +12,7 @@ their operation.
 This module was provided to test the functionalities of the LDC Board and validate the project concept.<br>
 It handles the communication between a bench power supply with SCPI, [PyDRS](https://pypi.org/project/pydrs/) and the
 LDC Board itself.<br>
-The code is divided by three principal scripts:
+The code is divided in three principal scripts:
 - SCPI Commands
 - LDC Commands
 - Accuracy Test
@@ -45,7 +45,7 @@ All prerequisites can be found in the
 
 ## Installation Guide
 Firstly clone the project repository from [Github](https://github.com/cnpem-elt/ldc-sw/tree/main) to 
-**your_local_folder** with the following command:
+your local folder with the following command:
 ```command
 git clone https://github.com/cnpem-elt/ldc-sw.git
 ```
