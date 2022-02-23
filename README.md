@@ -44,7 +44,7 @@ All prerequisites can be found in the
 [_requirements.txt_](https://github.com/cnpem-elt/ldc-sw/blob/enhancement/requirements.txt) file.
 
 ## Installation Guide
-Firstly clone the project repository from [Github](https://github.com/cnpem-elt/ldc-sw/tree/main) to 
+Firstly clone the project repository from [GitHub](https://github.com/cnpem-elt/ldc-sw/tree/main) to 
 your local folder with the following command:
 ```command
 git clone https://github.com/cnpem-elt/ldc-sw.git

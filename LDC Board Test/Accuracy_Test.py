@@ -34,10 +34,12 @@ class AccuracyTest:
         self.path = ''
         print("Accuracy Test module activated!")
 
-    def start(self, step, minimum, maximum, duration):
+    def start(self, step, minimum, maximum, duration, testname='AccuracyTest'):
         """
         Executes the accuracy test of the LDC board
 
+        :param testname: Sets the name for the folder to receive the data of the test
+        :type testname: str
         :param step: Current step for each measure of the test, in Amperes
         :type step: float
         :param minimum: Minimum current value for accuracy test, in Amperes
@@ -48,12 +50,18 @@ class AccuracyTest:
         :type duration: int
         """
         Tk().withdraw()
+        self.test_name = testname
         self.path = askdirectory(title='Select Folder')
-        test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
-        self.test_name = "AccuracyTest"+test_date
+        test_date = datetime.today().strftime("%d/%m/%Y - %H:%M")
         os.makedirs(os.path.join(self.path, self.test_name))
         os.makedirs(os.path.join(self.path, self.test_name+"\\Samples"))
         os.makedirs(os.path.join(self.path, self.test_name+"\\Plots"))
+        os.chdir(os.path.join(self.path, self.test_name))
+        # Saves a file with the test information
+        info_file = open('INFO.txt', 'w+')
+        info_file.write(testname+"\n"+test_date+"\nSEI - Electronics Systems and Instrumentation")
+        info_file.close()
+        os.chdir(cwd)
         span = maximum - minimum
         self.total_steps = round(span/step) + 1
         print("Starting test...")
@@ -189,9 +197,11 @@ if __name__ == '__main__':
     tminimum = float(input("Insert the minimum current of the test, in Amperes: "))
     tmaximum = float(input("Insert the maximum current of the test, in Amperes: "))
     tduration = int(input("Insert the duration of the measure steps, in seconds: "))
+    testnum = int(input("Insert the test number: "))
+    tname = "AccuracyTest-"+str(testnum)
     apply_degauss = int(input("Apply the degaussing process? 1(yes)/0(No):"))
     if apply_degauss == 1:
         ldc.degauss()
     elif apply_degauss == 0:
         pass
-    acc.start(tstep, tminimum, tmaximum, tduration)
+    acc.start(tstep, tminimum, tmaximum, tduration, tname)
