@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Accuracy_Test.py
+# accuracy-test.py
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,14 +8,14 @@ import time
 from datetime import datetime
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
-from LDC_Commands import LDC
+from ldc import Commands
 from scpi import Supply
 
 # Gets the current directory to return in the end of the test
 cwd = os.getcwd()
 
-# LDC Functions start
-ldc = LDC()
+# LDC Commands start
+ldc = Commands()
 
 instrument = input("Insert instrument id: ")
 scpi = Supply(instrument)
@@ -80,7 +80,7 @@ class AccuracyTest:
             ldc.read_ground_leakage(duration)
             # Change to the created directories and saves all acquired information
             os.chdir(os.path.join(self.path, self.test_name+"\\Plots"))
-            ldc.save_graphic(test_name)
+            ldc.save_graph(test_name)
             os.chdir(os.path.join(self.path, self.test_name+"\\Samples"))
             ldc.save_csv_file(test_name)
             os.chdir(cwd)
@@ -94,10 +94,10 @@ class AccuracyTest:
             elif (i*step) == span:
                 print("Accuracy Test completed!")
         scpi.disable_output()
-        AccuracyTest.save_graphics(self)
+        AccuracyTest.save_graphs(self)
         AccuracyTest.save_csv_files(self)
 
-    def save_graphics(self):
+    def save_graphs(self):
         """
         Saves all the specific plots at the end of the accuracy test. The graphics are:\n
         - Source Current x Mean Leakage Current

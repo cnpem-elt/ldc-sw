@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-
-# LDC_Commands.py
+# ldc.py
 
 import os
 import matplotlib.pyplot as plt
@@ -21,7 +20,7 @@ instrument = input("Insert instrument id: ")
 scpi = Supply(instrument)
 
 
-class LDC:
+class Commands:
     """
     Sets up the commands to control the Leakage Detection Circuit board alongside an instrument with SCPI communication
     """
@@ -100,7 +99,7 @@ class LDC:
         np.savetxt(name, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         return "CSV file named '{}' saved successfully!".format(name)
 
-    def plot_graphic(self, graph_name='Leakage Current'):
+    def plot_graph(self, graph_name='Leakage Current'):
         """
         Plots the graphic of the ground leakage measure
 
@@ -115,7 +114,7 @@ class LDC:
         plt.title(graph_name)
         return plt.show()
 
-    def save_graphic(self, graph_name='Leakage Current'):
+    def save_graph(self, graph_name='Leakage Current'):
         """
         Saves a jpg file of the ground leakage graphic
 
@@ -145,7 +144,7 @@ class LDC:
 
 if __name__ == '__main__':
     cwd = os.getcwd()
-    ldc = LDC()
+    ldc = Commands()
     read_current = float(input("Insert the desired current, in Amperes: "))
     read_duration = int(input("Insert the duration of the ground leakage measure, in seconds: "))
     apply_degauss = int(input("Apply the degaussing process? 1(yes)/0(No):"))
@@ -157,7 +156,7 @@ if __name__ == '__main__':
     time.sleep(0.15)
     ldc.read_ground_leakage(read_duration)
     scpi.disable_output()
-    ldc.plot_graphic()
+    ldc.plot_graph()
     answer = int(input("Save plot and csv file? 1(yes)/0(No): "))
     if answer == 1:
         Tk().withdraw()
@@ -165,7 +164,7 @@ if __name__ == '__main__':
         ldc_test = 'LDC_Test-'+ldc.test_time.strftime('%d_%m_%Y-%H_%M_%S')
         os.makedirs(os.path.join(path, ldc_test))
         os.chdir(os.path.join(path, ldc_test))
-        ldc.save_graphic()
+        ldc.save_graph()
         ldc.save_csv_file()
         print("Saved files of LDC Test {}!".format(ldc_test))
         os.chdir(cwd)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# SCPI_Commands.py
+# scpi.py
 
 class Supply:
     """
