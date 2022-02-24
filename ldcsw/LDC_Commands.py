@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
+
 # LDC_Commands.py
 
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+import pydrs
 import time
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
 from datetime import datetime
+from scpi import Supply
+
+drs = pydrs.SerialDRS()
+port_num = int(input("Insert the number of the COM port: "))
+com_port = 'COM' + str(port_num)
+drs.connect(com_port)  # PyDRS Communication with IIB
+
+instrument = input("Insert instrument id: ")
+scpi = Supply(instrument)
 
 
 class LDC:
@@ -19,15 +30,6 @@ class LDC:
         """
         Instantiates the class, all necessary variables and modules
         """
-        import pydrs
-        from SCPI_Commands import SCPI
-
-        self.drs = pydrs.SerialDRS()
-        port_num = int(input("Insert the number of the COM port: "))
-        com_port = 'COM' + str(port_num)
-        self.drs.connect(com_port)  # PyDRS Communication with IIB
-        instrument = input("Insert instrument id: ")
-        self.scpi = SCPI(instrument)
         self.frequency = 10
         self.period = 1 / self.frequency
         self.mean = 0
@@ -57,10 +59,10 @@ class LDC:
         self.error.clear()
         print("Waiting for acquisition...\n")
         for x in range(int(self.frequency * duration)):
-            current_value = self.scpi.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
-            self.samples.append((self.drs.read_bsmp_variable(53, 'float'))*1000)
+            current_value = scpi.measure_current()
+            self.samples.append((drs.read_bsmp_variable(53, 'float'))*1000)
             self.time_samples.append(round(x * self.period, 2))
-            self.error.append((current_value[0]*1000) - self.samples[x])
+            self.error.append((current_value*1000) - self.samples[x])
             time.sleep(self.period)
             np_samples = np.array(self.samples)
             np_error = np.array(self.error)
@@ -134,10 +136,10 @@ class LDC:
         return "Graphic file named '{}' saved successfully!".format(name)
 
     def degauss(self):
-        self.scpi.disable_output()
-        self.drs.reset_interlocks()
+        scpi.disable_output()
+        drs.reset_interlocks()
         time.sleep(0.3)
-        self.drs.reset_interlocks()
+        drs.reset_interlocks()
         return "Applied degaussing process!"
 
 
@@ -151,10 +153,10 @@ if __name__ == '__main__':
         ldc.degauss()
     elif apply_degauss == 0:
         pass
-    ldc.scpi.set_current(read_current)
+    scpi.set_current(read_current)
     time.sleep(0.15)
     ldc.read_ground_leakage(read_duration)
-    ldc.scpi.disable_output()
+    scpi.disable_output()
     ldc.plot_graphic()
     answer = int(input("Save plot and csv file? 1(yes)/0(No): "))
     if answer == 1:

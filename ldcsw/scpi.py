@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SCPI_Commands.py
 
-class SCPI:
+class Supply:
     """
     Sets up a series of commands to use with an instrument compatible with SCPI communication
     """

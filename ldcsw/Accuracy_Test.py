@@ -9,12 +9,16 @@ from datetime import datetime
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
 from LDC_Commands import LDC
+from scpi import Supply
 
 # Gets the current directory to return in the end of the test
 cwd = os.getcwd()
 
 # LDC Functions start
 ldc = LDC()
+
+instrument = input("Insert instrument id: ")
+scpi = Supply(instrument)
 
 
 # Accuracy Test Properties and Functions
@@ -65,10 +69,10 @@ class AccuracyTest:
         span = maximum - minimum
         self.total_steps = round(span/step) + 1
         print("Starting test...")
-        ldc.scpi.enable_output()
+        scpi.enable_output()
         for i in range(int(self.total_steps)):  # Loop to read the ground leakage in each step
             current = minimum + (i*step)
-            ldc.scpi.set_current(current)
+            scpi.set_current(current)
             print("Values for {0:.3f} mA".format(current*1000))
             test_name = '{0:.1f}mA Leakage Current'.format(current*1000)
             print('--'*20)
@@ -89,7 +93,7 @@ class AccuracyTest:
                 print("Acquisition completed! Moving to the next step...\n")
             elif (i*step) == span:
                 print("Accuracy Test completed!")
-        ldc.scpi.disable_output()
+        scpi.disable_output()
         AccuracyTest.save_graphics(self)
         AccuracyTest.save_csv_files(self)
 
