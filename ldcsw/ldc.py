@@ -9,15 +9,16 @@ import time
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
 from datetime import datetime
-from scpi import Supply
+import scpi
 
 drs = pydrs.SerialDRS()
 port_num = int(input("Insert the number of the COM port: "))
 com_port = 'COM' + str(port_num)
 drs.connect(com_port)  # PyDRS Communication with IIB
 
+# SCPI Supply Commands start
 instrument = input("Insert instrument id: ")
-scpi = Supply(instrument)
+scpi = scpi.Supply(instrument)
 
 
 class Commands:

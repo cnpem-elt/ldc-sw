@@ -8,17 +8,18 @@ import time
 from datetime import datetime
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
-from ldc import Commands
-from scpi import Supply
+import ldc
+import scpi
 
 # Gets the current directory to return in the end of the test
 cwd = os.getcwd()
 
 # LDC Commands start
-ldc = Commands()
+ldc = ldc.Commands()
 
+# SCPI Supply Commands start
 instrument = input("Insert instrument id: ")
-scpi = Supply(instrument)
+scpi = scpi.Supply(instrument)
 
 
 # Accuracy Test Properties and Functions
