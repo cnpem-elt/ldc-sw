@@ -138,6 +138,7 @@ class LDC:
         self.drs.reset_interlocks()
         time.sleep(0.3)
         self.drs.reset_interlocks()
+        time.sleep(0.15)
         return "Applied degaussing process!"
 
 
