@@ -1,7 +1,7 @@
 # LDC SW - Leakage Detection Circuit Software
 
 ## What is LDC?
-The Leakage Detection Circuit is an electronic board developed by the **Electronics Systems and Instrumentation 
+The [Leakage Detection Circuit](https://github.com/cnpem-elt/ldc-hw) is an electronic board developed by the **Electronics Systems and Instrumentation 
 Group** (SEI) of the **National Center of Research in Energy and Materials** ([CNPEM](https://cnpem.br/)) in Brazil.<br>
 The board measures the leakage current of the Sirius power supplies then sends its values to store and plot in Sirius
 Archiver.<br>
