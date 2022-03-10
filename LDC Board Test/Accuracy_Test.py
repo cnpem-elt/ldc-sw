@@ -29,12 +29,9 @@ class AccuracyTest:
         self.total_std = []
         self.total_current = []
         self.total_ppc = []
-        self.test_name = ''
         self.total_steps = 0
+        self.testnum = 0
         self.path = ''
-#        self.test_number = 1
-#        self.test_quantity = 1
-
         print("Accuracy Test module initialized!")
 
     def start(self, step, minimum, maximum, duration, test_number):
@@ -49,13 +46,10 @@ class AccuracyTest:
         :type maximum: float
         :param duration: Duration of the measurement in each step, in seconds
         :type duration: int
-        :param test_quantity: Number os tests run
-        :type test_quantity: int
+        :param test_number: Sets the number of the test
+        :type test_number: int
         """
-        Tk().withdraw()
-#        self.path = askdirectory(title='Select Folder')
-        test_date = datetime.today().strftime("_%d_%m_%Y-%H_%M")
-        self.test_name = "AccuracyTest"+str(test_number)+test_date
+        self.testnum = test_number
         os.makedirs(os.path.join(self.path, str(test_number)))
         os.makedirs(os.path.join(self.path, str(test_number)+"\\Samples"))
         os.makedirs(os.path.join(self.path, str(test_number)+"\\Plots"))
@@ -112,7 +106,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Test Steps')
         plt.title('Source Current X Mean Leakage Current')
-        os.chdir(os.path.join(self.path, str(test_number)+"\\Plots"))
+        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Plots"))
         jpgname = 'SourceCurrent_X_MeanLeakageCurrent.jpg'
         plt.legend()
         plt.savefig(jpgname)
@@ -128,7 +122,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Mean Current Error [mA]')
         plt.title('Source Current X Mean Current Error')
-        os.chdir(os.path.join(self.path, str(test_number)+"\\Plots"))
+        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Plots"))
         jpgname = 'SourceCurrent_X_MeanCurrentError.jpg'
         plt.savefig(jpgname)
         plt.close()
@@ -143,7 +137,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Leakage Current Standard Deviation [mA]')
         plt.title('Source Current X Current Standard Deviation')
-        os.chdir(os.path.join(self.path, str(test_number)+"\\Plots"))
+        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Plots"))
         jpgname = 'SourceCurrent_X_CurrentStandardDeviation.jpg'
         plt.savefig(jpgname)
         plt.close()
@@ -162,7 +156,7 @@ class AccuracyTest:
         for row in range(len(self.total_mean)):
             column0.append(self.total_current[row])
             column1.append(self.total_mean[row])
-        os.chdir(os.path.join(self.path, str(test_number)+"\\Samples"))
+        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' successfully saved!".format(csvname))
@@ -175,7 +169,7 @@ class AccuracyTest:
         for row in range(len(self.total_error)):
             column0.append(self.total_current[row])
             column1.append(self.total_error[row])
-        os.chdir(os.path.join(self.path, str(test_number)+"\\Samples"))
+        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' successfully saved!".format(csvname))
@@ -188,7 +182,7 @@ class AccuracyTest:
         for row in range(len(self.total_std)):
             column0.append(self.total_current[row])
             column1.append(self.total_std[row])
-        os.chdir(os.path.join(self.path, str(test_number)+"\\Samples"))
+        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' successfully saved!".format(csvname))
@@ -196,7 +190,17 @@ class AccuracyTest:
 
 if __name__ == '__main__':
     acc = AccuracyTest()
-#    test_quantity = 1
+    test_name = str(input("Enter the test name: "))
+    folder_path = askdirectory(title='Select Folder')
+    acc.path = os.path.join(folder_path, test_name)
+    os.makedirs(acc.path)
+    test_date = datetime.today().strftime("%d/%m/%Y - %H:%M")
+    # Saves a file with the test information
+    os.chdir(acc.path)
+    info_file = open('INFO.txt', 'w+')
+    info_file.write(test_name+"\n"+test_date+"\nSEI - Electronics Systems and Instrumentation")
+    info_file.close()
+    os.chdir(cwd)
     tstep = float(input("Enter the current step, in Amperes: "))
     tminimum = float(input("Enter the minimum current of the test, in Amperes: "))
     tmaximum = float(input("Enter the maximum current of the test, in Amperes: "))
@@ -205,11 +209,7 @@ if __name__ == '__main__':
     apply_degauss = int(input("Apply the degaussing process? 1 (Yes) or 0 (No):"))
     test_quantity = int(input("How many times do want to run this test?: "))
     print(test_quantity, " tests to go!")
-    acc.path = askdirectory(title='Select Folder')
-    while test_quantity > 0:
-        for n in range(test_quantity):
-            test_number = n+1
-#            test_quantity = test_quantity-1
+    for n in range(test_quantity):
         if apply_degauss:
             ldc.degauss()
         acc.total_mean.clear()
@@ -217,8 +217,5 @@ if __name__ == '__main__':
         acc.total_std.clear()
         acc.total_current.clear()
         acc.total_ppc.clear()
-#        acc.path = askdirectory(title='Select Folder')
-        acc.start(tstep, tminimum, tmaximum, tduration, test_number)
-#10
-        test_quantity = test_quantity-1
-        print(test_quantity, " tests remaining !")
+        acc.start(tstep, tminimum, tmaximum, tduration, n+1)
+        print(test_quantity-n-1, " tests remaining !")
