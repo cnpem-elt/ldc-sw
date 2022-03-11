@@ -15,7 +15,6 @@ class SCPI:
         import pyvisa as visa
         rm = visa.ResourceManager()
         self.instrument = rm.open_resource(instrument_id)
-        print('SCPI Commands enabled!\nInstrument connected successfully!')
 
     def set_protection_voltage(self, protection_voltage):
         """
