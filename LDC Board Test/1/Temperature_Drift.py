@@ -46,8 +46,8 @@ class LDC:
     def thermal_drift_test(self, duration):
         """
         Reads the ground leakage current detected with the LDC board
-        Reader thermal drift test
-
+        Reader thermal drift test 
+        
         :param duration: Duration of the measurement in seconds
         :type duration: int
 
@@ -57,7 +57,7 @@ class LDC:
         self.samples.clear()
         self.time_samples.clear()
         self.error.clear()
-        print("Acquisition in progress...\n")
+        print("Waiting for acquisition...\n")
         z = 0
         for x in range(int(self.frequency * duration)):
             current_value = self.scpi.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
@@ -87,9 +87,9 @@ class LDC:
                      "Standard Deviation: {5:.3f} mA\n".format(self.mean, self.maximum, self.minimum,
                                                                self.ppc, self.mean_error, self.std_dev))
 
-    def save_csv_file(self, file_name='THERMAL DRIFT'):
+    def save_csv_file(self, file_name='LDC TEMPERATURE TEST'):
         """
-        Saves the data of a ground leakage measurement in a csv format file
+        Saves the data of a ground leakage measure in a csv format file
         :argument file_name: Gives a custom name to the file. Default gives 'Leakage Current'
 
         :return: A string confirming the execution
@@ -107,17 +107,17 @@ class LDC:
             column2.append(self.temperature_samples[row])
         np.savetxt(name, [p for p in zip(column0, column1, column2)], delimiter=',', fmt='%s')
         return "CSV current file named '{}' saved successfully!".format(name)
-
-    def plot_graphic(self, graph_name='THERMAL DRIFT'):
+   
+    def plot_graphic(self, graph_name='THERMAL DRIFT TEST'):
         """
-        Plots the graphic of the ground leakage measurement
+        Plots the graphic of the ground leakage measure
 
-        :return: Return the matplotlib window with the measurement plot
+        :return: Return the matplotlib window with the measure plot
         """
         fig, ax = plt.subplots(1, 1, figsize=(15, 5))
         color='tab:blue'
-        ax.locator_params(axis='y', tight=True, nbins=10)
-        ax.locator_params(axis='x', tight=True, nbins=25)
+        ax.locator_params(axis='y', tight=True, bins=10)
+        ax.locator_params(axis='x', tight=True, bins=25)
         ax.plot(self.time_samples, self.samples)
         plt.xlabel('Time [s]')
         plt.ylabel('Leakage Current [mA]', color=color)
@@ -128,9 +128,9 @@ class LDC:
         ax1.plot(self.time_samples, self.temperature_samples, color=color)
         ax1.locator_params(axis='y', tight=True, nbins=10)
         plt.title(graph_name)
-        return plt.show()
+        return plt.show() 
 
-    def save_graphic(self, graph_name='THERMAL DRIFT'):
+    def save_graphic(self, graph_name='THERMAL DRIFT TEST'):
         """
         Saves a jpg file of the ground leakage graphic
 
@@ -163,14 +163,14 @@ class LDC:
         time.sleep(0.3)
         self.drs.reset_interlocks()
         time.sleep(0.15)
-        return "Degaussing process applied!"
+        return "Applied degaussing process!"
 
 
 if __name__ == '__main__':
     cwd = os.getcwd()
     ldc = LDC()
     read_current = float(input("Insert the desired current, in Amperes: "))
-    read_duration = int(input("Insert the duration of the ground leakage measurent, in seconds: "))
+    read_duration = int(input("Insert the duration of the ground leakage measure, in seconds: "))
     apply_degauss = int(input("Apply the degaussing process? 1(yes)/0(No):"))
     if apply_degauss == 1:
         ldc.degauss()
@@ -190,7 +190,7 @@ if __name__ == '__main__':
         os.chdir(os.path.join(path, ldc_test))
         ldc.save_graphic()
         ldc.save_csv_file()
-        print("LDC Test files saved {}!".format(ldc_test))
+        print("Saved files of LDC Test {}!".format(ldc_test))
         os.chdir(cwd)
         exit()
     elif answer == 0:
