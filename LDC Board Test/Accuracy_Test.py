@@ -70,9 +70,9 @@ class AccuracyTest:
             ldc.read_ground_leakage(duration)
             # Change to the created directories and saves all acquired information
             os.chdir(os.path.join(self.path, str(test_number)+"\\Plots"))
-            ldc.save_graphic()
+            ldc.save_graph(graph_name='Leakage Current Measurement, Iref = {0:.1f}mA'.format(current*1000))
             os.chdir(os.path.join(self.path, str(test_number)+"\\Samples"))
-            ldc.save_csv_file()
+            ldc.save_csv_file(file_name='Leakage_Current_Measurement-Iref_{0:.1f}mA'.format(current*1000))
             os.chdir(cwd)
             self.total_mean.append(ldc.mean)
             self.total_error.append(ldc.mean_error)

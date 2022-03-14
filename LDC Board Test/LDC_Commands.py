@@ -87,8 +87,7 @@ class LDC:
         :return: A string confirming the execution
         :rtype: str
         """
-        test_name = self.test_time.strftime('%d_%m_%Y-%H_%M_%S')
-        name = file_name+'-'+test_name+'.csv'
+        name = file_name+'.csv'
         data = [['Leakage Current'], ['Time']]
         column0 = data[0]
         column1 = data[1]
@@ -98,7 +97,7 @@ class LDC:
         np.savetxt(name, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         return "CSV file named '{}' saved successfully!".format(name)
 
-    def plot_graphic(self, graph_name='Leakage Current'):
+    def plot_graph(self, graph_name='Leakage Current'):
         """
         Plots the graphic of the ground leakage measure
 
@@ -110,28 +109,29 @@ class LDC:
         ax.plot(self.time_samples, self.samples)
         plt.xlabel('Time [s]')
         plt.ylabel('Leakage Current [mA]')
+        plt.grid()
         plt.title(graph_name)
         return plt.show()
 
-    def save_graphic(self, graph_name='Leakage Current'):
+    def save_graph(self, graph_name='Leakage Current'):
         """
         Saves a jpg file of the ground leakage graphic
 
         :return: Returns a string confirming the jpg file saving
         :rtype: str
         """
-        test_name = self.test_time.strftime('%d_%m_%Y-%H_%M_%S')
-        name = graph_name+'-'+test_name+'.jpg'
+        name = graph_name+'.jpg'
         fig, ax = plt.subplots(1, 1, figsize=(10, 5))
         ax.locator_params(axis='y', tight=True, nbins=15)
         ax.locator_params(axis='x', tight=True, nbins=30)
         ax.plot(self.time_samples, self.samples)
         plt.xlabel('Time [s]')
         plt.ylabel('Leakage Current [mA]')
+        plt.grid()
         plt.title(graph_name)
         plt.savefig(name)
         plt.close()
-        return "Graphic file named '{}' saved successfully!".format(name)
+        return "Graph file named '{}' saved successfully!".format(name)
 
     def degauss(self):
         self.scpi.disable_output()
@@ -153,20 +153,21 @@ if __name__ == '__main__':
     elif apply_degauss == 0:
         pass
     ldc.scpi.set_current(read_current)
+    current = ldc.scpi.measure_current()
     time.sleep(0.15)
     ldc.read_ground_leakage(read_duration)
     ldc.scpi.disable_output()
-    ldc.plot_graphic()
+    ldc.plot_graph()
     answer = int(input("Save plot and csv file? 1(yes)/0(No): "))
     if answer == 1:
         Tk().withdraw()
         path = askdirectory(title='Select Folder')
-        ldc_test = 'LDC_Test-'+ldc.test_time.strftime('%d_%m_%Y-%H_%M_%S')
-        os.makedirs(os.path.join(path, ldc_test))
-        os.chdir(os.path.join(path, ldc_test))
-        ldc.save_graphic()
-        ldc.save_csv_file()
-        print("Saved files of LDC Test {}!".format(ldc_test))
+        folder_name = str(input("Insert the folder name: "))
+        os.makedirs(os.path.join(path, folder_name))
+        os.chdir(os.path.join(path, folder_name))
+        ldc.plot_graph(graph_name='Leakage Current Measurement, Iref = {0:.1f}mA'.format(current*1000))
+        ldc.save_csv_file(file_name='Leakage_Current_Measurement-Iref_{0:.1f}mA'.format(current*1000))
+        print("Files saved in the folder {}!".format(folder_name))
         os.chdir(cwd)
         exit()
     elif answer == 0:
