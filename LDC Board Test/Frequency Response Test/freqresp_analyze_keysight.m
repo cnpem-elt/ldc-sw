@@ -33,6 +33,7 @@ for i = 1:n_fresp
     fresp(:,i) = Y(:,tfdef(i,2))./Y(:,tfdef(i,1));
     leg_fresp{i} = [idexpresult.name{tfdef(i,2)} '/' idexpresult.name{tfdef(i,1)}];
 end
+leg_fresp{size(leg_fresp,1)+1} = '-3 dB';
 
 r.fresp = fresp;
 r.f = f;
@@ -45,6 +46,7 @@ if nargout < 1
     legend(leg_fresp)
     grid on
     hold all
+    semilogx([f(1) f(end)], [-3 -3], 'k--', 'LineWidth', 2);
     xlim([f(1) f(end)])
     ylabel('Magnitude [dB]');
     subplot(212)

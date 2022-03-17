@@ -9,7 +9,7 @@ initlibscpi;
 fid_instr.osc = vxi11('10.0.6.64');
 
 % Signal generator
-fid_instr.gen = vxi11('10.0.6.108');
+fid_instr.gen = vxi11('10.0.6.110');
 
 % Initialize excitation signal parameters
 excit_param = struct;
@@ -20,8 +20,7 @@ excit_param.df = 50;
 excit_param.type = 'sin';
 
 excit_param.nharm = 10;
-excit_param.sin_freq = [50 100:100:1000 2000:1000:10000 20000:10000:100000];
-excit_param.sin_freq = [50 100:100:1000];
+excit_param.sin_freq = [50 100:100:1000 2000:1000:10000 20000:10000:100000 200000:100000:500000];
 excit_param.navg = 1;
 
 channel = struct( ...
@@ -43,6 +42,8 @@ expdef = [ ...
 test_name = input('Enter test name: ', 's');
 fprintf('\n');
 
+freqresps = cell(size(expdef,1),1);
+
 % Run frequency response test for each set of offsets and peak-to-peak voltages
 for i=1:size(expdef,1)
     excit_param.Voffset = expdef(i,1);
@@ -55,5 +56,5 @@ for i=1:size(expdef,1)
     save(r.fname, 'r', '-v7');
     
     % Plot results
-    freqresp_analyze_keysight(r,excit_param.type,[1,2]);
+    freqresps{i} = freqresp_analyze_keysight(r,excit_param.type,[1,2]);
 end
