@@ -25,8 +25,9 @@ class LDC:
         self.drs = pydrs.SerialDRS()
         port_num = int(input("Insert the number of the COM port: "))
         com_port = 'COM' + str(port_num)
+        comunic_instrumentip = input("Insert instrument ip: ")
         self.drs.connect(com_port)  # PyDRS Communication with IIB
-        instrument = input("Insert instrument id: ")
+        instrument = 'TCPIP::' + str(comunic_instrumentip) + '::inst0::INSTR'
         self.scpi = SCPI(instrument)
         self.frequency = 10
         self.period = 1 / self.frequency
