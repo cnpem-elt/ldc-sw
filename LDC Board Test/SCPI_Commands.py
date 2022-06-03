@@ -90,7 +90,7 @@ class SCPI:
         :rtype: str
         """
         self.instrument.write(':OUTPut1:STATe %d' % 1)
-        return "Output enabled successfully!"
+        return "Output successfully enabled !"
 
     def disable_output(self):
         """
@@ -100,7 +100,7 @@ class SCPI:
         :rtype: str
         """
         self.instrument.write(':OUTPut1:STATe %d' % 0)
-        return "Output disabled successfully!"
+        return "Output successfully disabled!"
 
     def measure_all(self):
         """

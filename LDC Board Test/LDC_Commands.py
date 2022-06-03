@@ -23,9 +23,9 @@ class LDC:
         from SCPI_Commands import SCPI
 
         self.drs = pydrs.SerialDRS()
-        port_num = int(input("Insert the number of the COM port: "))
+        port_num = int(input("Enter the COM port number: "))
         com_port = 'COM' + str(port_num)
-        comunic_instrumentip = input("Insert instrument ip: ")
+        comunic_instrumentip = input("Enter the instrument ip: ")
         self.drs.connect(com_port)  # PyDRS Communication with IIB
         instrument = 'TCPIP::' + str(comunic_instrumentip) + '::inst0::INSTR'
         self.scpi = SCPI(instrument)
@@ -38,12 +38,13 @@ class LDC:
         self.mean_error = 0
         self.std_dev = 0
         self.test_time = 0
+        self.iib_address = 69
         self.samples = []
         self.time_samples = []
         self.error = []
         print("LDC functions enabled!")
 
-    def read_ground_leakage(self, duration):
+    def read_ground_leakage(self, duration, iib_address):
         """
         Reads the ground leakage current detected with the LDC board
 
@@ -56,10 +57,10 @@ class LDC:
         self.samples.clear()
         self.time_samples.clear()
         self.error.clear()
-        print("Waiting for acquisition...\n")
+        print("Acquisition in progress, please wait!\n")
         for x in range(int(self.frequency * duration)):
             current_value = self.scpi.instrument.query_ascii_values(':MEASure:CURRent:DC? (%s)' % '@1')
-            self.samples.append((self.drs.read_bsmp_variable(53, 'float'))*1000)
+            self.samples.append((self.drs.read_bsmp_variable(iib_address, 'float'))*1000)
             self.time_samples.append(round(x * self.period, 2))
             self.error.append((current_value[0]*1000) - self.samples[x])
             time.sleep(self.period)
@@ -96,7 +97,7 @@ class LDC:
             column0.append(self.samples[row])
             column1.append(self.time_samples[row])
         np.savetxt(name, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
-        return "CSV file named '{}' saved successfully!".format(name)
+        return "CSV file named '{}' successfully saved!".format(name)
 
     def plot_graph(self, graph_name='Leakage Current'):
         """
@@ -132,23 +133,24 @@ class LDC:
         plt.title(graph_name)
         plt.savefig(name)
         plt.close()
-        return "Graph file named '{}' saved successfully!".format(name)
+        return "Graph file named '{}' successfully saved!".format(name)
 
     def degauss(self):
+        self.scpi.set_current(0.0)
         self.scpi.disable_output()
         self.drs.reset_interlocks()
         time.sleep(0.3)
         self.drs.reset_interlocks()
         time.sleep(0.15)
-        return "Applied degaussing process!"
+        return "Degaussing process done!"
 
 
 if __name__ == '__main__':
     cwd = os.getcwd()
     ldc = LDC()
-    read_current = float(input("Insert the desired current, in Amperes: "))
-    read_duration = int(input("Insert the duration of the ground leakage measure, in seconds: "))
-    apply_degauss = int(input("Apply the degaussing process? 1(yes)/0(No):"))
+    read_current = float(input("Enter the desired current, in Amperes: "))
+    read_duration = int(input("Enter the duration of the ground leakage measurement, in seconds: "))
+    apply_degauss = int(input("Will degaussing process be applied? 1(yes)/0(No):"))
     if apply_degauss == 1:
         ldc.degauss()
     elif apply_degauss == 0:
@@ -156,14 +158,14 @@ if __name__ == '__main__':
     ldc.scpi.set_current(read_current)
     current = ldc.scpi.measure_current()
     time.sleep(0.15)
-    ldc.read_ground_leakage(read_duration)
+    ldc.read_ground_leakage(read_duration, iib_address=69)
     ldc.scpi.disable_output()
     ldc.plot_graph()
     answer = int(input("Save plot and csv file? 1(yes)/0(No): "))
     if answer == 1:
         Tk().withdraw()
         path = askdirectory(title='Select Folder')
-        folder_name = str(input("Insert the folder name: "))
+        folder_name = str(input("Enter folder name: "))
         os.makedirs(os.path.join(path, folder_name))
         os.chdir(os.path.join(path, folder_name))
         ldc.plot_graph(graph_name='Leakage Current Measurement, Iref = {0:.1f}mA'.format(current*1000))
