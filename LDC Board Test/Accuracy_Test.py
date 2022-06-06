@@ -24,6 +24,7 @@ class AccuracyTest:
     """
 
     def __init__(self):
+        self.iib_address_list = []
         self.total_mean = []
         self.total_error = []
         self.total_std = []
@@ -31,10 +32,11 @@ class AccuracyTest:
         self.total_ppc = []
         self.total_steps = 0
         self.testnum = 0
+        self.boards_quantity = 0
         self.path = ''
         print("Accuracy Test module initialized!")
 
-    def start(self, step, minimum, maximum, duration, test_number):
+    def start(self, step, minimum, maximum, duration, test_number, iib_address):
         """
         Executes the accuracy test of the LDC board
 
@@ -50,9 +52,11 @@ class AccuracyTest:
         :type test_number: int
         """
         self.testnum = test_number
-        os.makedirs(os.path.join(self.path, str(test_number)))
-        os.makedirs(os.path.join(self.path, str(test_number)+"\\Samples"))
-        os.makedirs(os.path.join(self.path, str(test_number)+"\\Plots"))
+        self.iib_address = iib_address
+        os.makedirs(os.path.join(self.path, str(iib_address)+"\\"+str(test_number)))
+        os.makedirs(os.path.join(self.path, str(iib_address)+"\\"+str(test_number)+"\\Samples"))
+        os.makedirs(os.path.join(self.path, str(iib_address)+"\\"+str(test_number)+"\\Plots"))
+
         span = maximum - minimum
         self.total_steps = round(span/step) + 1
         print("Starting test...")
@@ -67,11 +71,11 @@ class AccuracyTest:
             print("Values for {0:.3f} mA".format(current*1000))
             print('--'*20)
             time.sleep(0.15)
-            ldc.read_ground_leakage(duration)
+            ldc.read_ground_leakage(duration, iib_address)
             # Change to the created directories and saves all acquired information
-            os.chdir(os.path.join(self.path, str(test_number)+"\\Plots"))
+            os.chdir(os.path.join(self.path, str(iib_address)+"\\"+str(test_number)+"\\Plots"))
             ldc.save_graph(graph_name='Leakage Current Measurement, Iref = {0:.1f}mA'.format(current*1000))
-            os.chdir(os.path.join(self.path, str(test_number)+"\\Samples"))
+            os.chdir(os.path.join(self.path, str(iib_address)+"\\"+str(test_number)+"\\Samples"))
             ldc.save_csv_file(file_name='Leakage_Current_Measurement-Iref_{0:.1f}mA'.format(current*1000))
             os.chdir(cwd)
             self.total_mean.append(ldc.mean)
@@ -81,9 +85,9 @@ class AccuracyTest:
             self.total_ppc.append(ldc.ppc)
             if (i*step) < span:
                 if direction:
-                    print("Acquisitions at {0:.3f} mA done! Stepping down the source current...\n".format(current*1000))
+                    print("Acquisitions at {0:.3f} mA done! Stepping down the current source...\n".format(current*1000))
                 else:
-                    print("Acquisition at {0:.3f} mA done! Stepping up the source current...\n" .format(current*1000))
+                    print("Acquisition at {0:.3f} mA done! Stepping up the current source...\n" .format(current*1000))
             elif (i*step) == span:
                 print("Accuracy Test completed!")
         ldc.scpi.disable_output()
@@ -106,7 +110,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Test Steps')
         plt.title('Source Current X Mean Leakage Current')
-        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Plots"))
+        os.chdir(os.path.join(self.path, str(iib_address)+"\\"+str(self.testnum)+"\\Plots"))
         jpgname = 'SourceCurrent_X_MeanLeakageCurrent.jpg'
         plt.legend()
         plt.savefig(jpgname)
@@ -122,7 +126,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Mean Current Error [mA]')
         plt.title('Source Current X Mean Current Error')
-        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Plots"))
+        os.chdir(os.path.join(self.path, str(iib_address)+"\\"+str(self.testnum)+"\\Plots"))
         jpgname = 'SourceCurrent_X_MeanCurrentError.jpg'
         plt.savefig(jpgname)
         plt.close()
@@ -137,7 +141,7 @@ class AccuracyTest:
         plt.xlabel('Source Current [mA]')
         plt.ylabel('Leakage Current Standard Deviation [mA]')
         plt.title('Source Current X Current Standard Deviation')
-        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Plots"))
+        os.chdir(os.path.join(self.path, str(iib_address)+"\\"+str(self.testnum)+"\\Plots"))
         jpgname = 'SourceCurrent_X_CurrentStandardDeviation.jpg'
         plt.savefig(jpgname)
         plt.close()
@@ -156,7 +160,7 @@ class AccuracyTest:
         for row in range(len(self.total_mean)):
             column0.append(self.total_current[row])
             column1.append(self.total_mean[row])
-        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Samples"))
+        os.chdir(os.path.join(self.path, str(iib_address)+"\\"+str(self.testnum)+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' successfully saved!".format(csvname))
@@ -169,7 +173,7 @@ class AccuracyTest:
         for row in range(len(self.total_error)):
             column0.append(self.total_current[row])
             column1.append(self.total_error[row])
-        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Samples"))
+        os.chdir(os.path.join(self.path, str(iib_address)+"\\"+str(self.testnum)+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' successfully saved!".format(csvname))
@@ -182,7 +186,7 @@ class AccuracyTest:
         for row in range(len(self.total_std)):
             column0.append(self.total_current[row])
             column1.append(self.total_std[row])
-        os.chdir(os.path.join(self.path, str(self.testnum)+"\\Samples"))
+        os.chdir(os.path.join(self.path, str(iib_address)+"\\"+str(self.testnum)+"\\Samples"))
         np.savetxt(csvname, [p for p in zip(column0, column1)], delimiter=',', fmt='%s')
         os.chdir(cwd)
         print("CSV file named '{}' successfully saved!".format(csvname))
@@ -201,21 +205,37 @@ if __name__ == '__main__':
     info_file.write(test_name+"\n"+test_date+"\nSEI - Electronics Systems and Instrumentation")
     info_file.close()
     os.chdir(cwd)
-    tstep = float(input("Enter the current step, in Amperes: "))
     tminimum = float(input("Enter the minimum current of the test, in Amperes: "))
     tmaximum = float(input("Enter the maximum current of the test, in Amperes: "))
+    tstep = float(input("Enter the current step, in Amperes: "))
     tduration = int(input("Enter the duration of the measurement steps, in seconds: "))
-    direction = int(input("Please enter the test direction: 0 (Ascending) or 1 (Descending): "))
+    direction = int(input("Enter the test direction: 0 (Ascending) or 1 (Descending): "))
     apply_degauss = int(input("Apply the degaussing process? 1 (Yes) or 0 (No):"))
     test_quantity = int(input("How many times do want to run this test?: "))
+    boards_quantity = int(input("How many channels are to be tested?"))
     print(test_quantity, " tests to go!")
-    for n in range(test_quantity):
-        if apply_degauss:
-            ldc.degauss()
-        acc.total_mean.clear()
-        acc.total_error.clear()
-        acc.total_std.clear()
-        acc.total_current.clear()
-        acc.total_ppc.clear()
-        acc.start(tstep, tminimum, tmaximum, tduration, n+1)
-        print(test_quantity-n-1, " tests remaining !")
+    
+    if boards_quantity == 4:
+        iib_address_list = [69, 85, 101, 117]
+    elif boards_quantity == 3:
+            iib_address_list = [69, 85, 101]
+    elif boards_quantity == 2:
+            iib_address_list = [69,85]
+    elif boards_quantity == 1:
+            iib_address_list = [69] 
+    else:
+        print("Out of range choice \n","Choose from 1 to 4")
+        boards_quantity=0
+        exit()
+    for address in iib_address_list:
+        iib_address = address
+        for n in range(test_quantity):
+            if apply_degauss:
+                ldc.degauss()
+            acc.total_mean.clear()
+            acc.total_error.clear()
+            acc.total_std.clear()
+            acc.total_current.clear()
+            acc.total_ppc.clear()
+            acc.start(tstep, tminimum, tmaximum, tduration, n+1, iib_address)
+            print(test_quantity-n-1, " tests remaining !")
