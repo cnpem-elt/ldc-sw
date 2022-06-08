@@ -214,15 +214,15 @@ if __name__ == '__main__':
     test_quantity = int(input("How many times do want to run this test?: "))
     boards_quantity = int(input("How many channels are to be tested?"))
     print(test_quantity, " tests to go!")
-    
+
     if boards_quantity == 4:
         iib_address_list = [69, 85, 101, 117]
     elif boards_quantity == 3:
-            iib_address_list = [69, 85, 101]
+        iib_address_list = [69, 85, 101]
     elif boards_quantity == 2:
-            iib_address_list = [69,85]
+        iib_address_list = [69, 85]
     elif boards_quantity == 1:
-            iib_address_list = [69] 
+        iib_address_list = [69]
     else:
         print("Out of range choice \n","Choose from 1 to 4")
         boards_quantity=0
