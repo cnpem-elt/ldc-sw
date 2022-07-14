@@ -5,11 +5,11 @@ close all;
 % Initialize necessary packages
 initlibscpi;
 
-% Oscilloscope
-fid_instr.osc = vxi11('10.0.6.64');
+% Initialize oscilloscope communication
+fid_instr.osc = vxi11('10.0.6.77');
 
-% Signal generator
-fid_instr.gen = vxi11('10.0.6.110');
+% Initialize signal generator communication
+fid_instr.gen = vxi11('10.0.6.64');
 
 % Initialize excitation signal parameters
 excit_param = struct;
@@ -19,29 +19,32 @@ excit_param.Voffset = 0;
 excit_param.df = 50;
 excit_param.type = 'sin';
 
-excit_param.nharm = 10;
+# Initialize test frequencies list
 excit_param.sin_freq = [50 100:100:1000 2000:1000:10000 20000:10000:100000 200000:100000:500000];
+excit_param.nharm = 10;
 excit_param.navg = 1;
 
+# Configure oscilloscope channels as Input and Output
 channel = struct( ...
     'name_instr', {'CHAN1', 'CHAN2'}, ...
     'name', {'Input', 'Output'}, ...
     'derivative', {0 0} ...
     );
 
-% Initialize communication parameters'
+% Initialize communication parameters
 param = scpiparam;
 
-% List of offsets (expdef[:,1]) and peak-to-peak (expdef[:,2]) voltages to use
+% Configure offset (expdef[:,1]) and peak-to-peak (expdef[:,2]) current to use
 % on excitation signal
-expdef = [ ...
-         0     5
-         ];
+Ioffset = 0;                      % [A]
+Ipp = 0.1;                        % [A]
+expdef = [ Ioffset*50  Ipp*50 ]; % [V]
 
 % Asks for test name
 test_name = input('Enter test name: ', 's');
 fprintf('\n');
 
+% Initialize frequency response data structure
 freqresps = cell(size(expdef,1),1);
 
 % Run frequency response test for each set of offsets and peak-to-peak voltages
